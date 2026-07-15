@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulator desek tarasowych v3</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fff;--bg2:#f7f7f5;--bg3:#efefec;
+  --text:#1a1a18;--text2:#6b6b68;--text3:#999994;
+  --bd:rgba(0,0,0,.12);--bd2:rgba(0,0,0,.2);
+  --ok-bg:#eaf3de;--ok-t:#3b6d11;
+  --err-bg:#fcebeb;--err-t:#a32d2d;
+  --info-bg:#e6f1fb;--info-t:#185fa5;
+  --warn-bg:#faeeda;--warn-t:#854f0b;
+  --r:10px;--rs:7px
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1e1e1c;--bg2:#2a2a28;--bg3:#333331;
+  --text:#f0f0ec;--text2:#a0a09c;--text3:#6b6b68;
+  --bd:rgba(255,255,255,.1);--bd2:rgba(255,255,255,.2);
+  --ok-bg:#173404;--ok-t:#97c459;
+  --err-bg:#501313;--err-t:#f09595;
+  --info-bg:#042c53;--info-t:#85b7eb;
+  --warn-bg:#412402;--warn-t:#ef9f27
+}}
+body{background:var(--bg3);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:14px;color:var(--text);padding:1.5rem 1rem;min-height:100vh}
+.wrap{max-width:940px;margin:0 auto}
+h1{font-size:20px;font-weight:600;margin-bottom:.2rem}
+.sub{font-size:13px;color:var(--text2);margin-bottom:1.5rem}
+.card{background:var(--bg);border:.5px solid var(--bd);border-radius:var(--r);padding:1.25rem;margin-bottom:1rem}
+.ct{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+@media(max-width:600px){.g3,.g4{grid-template-columns:1fr 1fr}}
+.f{display:flex;flex-direction:column;gap:5px}
+.f label{font-size:12px;color:var(--text2)}
+input[type=number],input[type=text],select{width:100%;padding:8px 10px;border:.5px solid var(--bd2);border-radius:var(--rs);background:var(--bg2);color:var(--text);font-size:14px;outline:none}
+input[type=number]:focus,input[type=text]:focus,select:focus{border-color:#378add;box-shadow:0 0 0 3px rgba(55,138,221,.15)}
+input[type=checkbox]{width:16px;height:16px;cursor:pointer;accent-color:#378add}
+input:disabled{opacity:.4;cursor:not-allowed}
+.ehdr{display:grid;grid-template-columns:1fr 1fr 36px;gap:8px;margin-bottom:6px}
+.ehdr span{font-size:11px;color:var(--text3);text-align:center}
+.ehdr1{display:grid;grid-template-columns:1fr 36px;gap:8px;margin-bottom:6px}
+.ehdr1 span{font-size:11px;color:var(--text3);text-align:center}
+.erow{display:grid;grid-template-columns:1fr 1fr 36px;gap:8px;margin-bottom:6px;align-items:center}
+.erow1{display:grid;grid-template-columns:1fr 36px;gap:8px;margin-bottom:6px;align-items:center}
+.erow input,.erow1 input{text-align:center}
+.delbtn{width:36px;height:36px;border:.5px solid var(--bd2);border-radius:var(--rs);background:transparent;cursor:pointer;color:var(--text2);font-size:18px;display:flex;align-items:center;justify-content:center}
+.delbtn:hover{background:var(--err-bg);color:var(--err-t);border-color:transparent}
+.btn{padding:8px 16px;border:.5px solid var(--bd2);border-radius:var(--rs);background:transparent;color:var(--text);font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--bg2)}
+.btnp{width:100%;justify-content:center;padding:12px;font-size:15px;font-weight:500;margin-top:.5rem;border-color:#378add;color:#378add}
+.btnp:hover{background:rgba(55,138,221,.08)}
+.note{font-size:12px;color:var(--text2);margin-top:8px}
+.togrow{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.togrow label{font-size:13px;cursor:pointer}
+.res{display:none}.res.on{display:block}
+.tblw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--bg2);padding:7px 10px;font-weight:600;font-size:11px;text-align:center;border-bottom:.5px solid var(--bd2);white-space:nowrap}
+td{padding:6px 10px;text-align:center;border-bottom:.5px solid var(--bd)}
+tr:last-child td{border-bottom:none}
+tr.sum td{background:var(--bg2);font-weight:600}
+.mg{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.m{background:var(--bg2);border-radius:var(--rs);padding:12px 10px;text-align:center}
+.m .l{font-size:11px;color:var(--text2);margin-bottom:4px}
+.m .n{font-size:20px;font-weight:600;color:var(--text);line-height:1.2}
+.m .u{font-size:11px;color:var(--text3)}
+.m.ok{background:var(--ok-bg)}.m.ok .n{color:var(--ok-t)}
+.m.info{background:var(--info-bg)}.m.info .n{color:var(--info-t)}
+.m.warn{background:var(--warn-bg)}.m.warn .n{color:var(--warn-t)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.split{grid-template-columns:1fr}}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--ok-bg);color:var(--ok-t);font-weight:600}
+.banner{border-radius:var(--rs);padding:10px 14px;font-size:13px;display:none}
+.banner.on{display:block}
+.banner.ok{background:var(--ok-bg);color:var(--ok-t)}
+.banner.info{background:var(--info-bg);color:var(--info-t)}
+.sep{border:none;border-top:.5px solid var(--bd);margin:12px 0}
+.opt-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:10px}
+@media(max-width:600px){.opt-grid{grid-template-columns:1fr 1fr}}
+.ahdr{display:grid;grid-template-columns:2fr 1.4fr 1fr 1fr 0.6fr 40px 36px;gap:8px;margin-bottom:6px;align-items:end}
+.ahdr span{font-size:11px;color:var(--text3);text-align:center}
+.ahdr span:first-child{text-align:left}
+.arow{display:grid;grid-template-columns:2fr 1.4fr 1fr 1fr 0.6fr 40px 36px;gap:8px;margin-bottom:8px;align-items:center}
+@media(max-width:700px){.ahdr,.arow{grid-template-columns:1fr 1fr 36px}}
+.achk{display:flex;align-items:center;justify-content:center}
+.ptbl td:first-child{text-align:left}
+.ptbl td:not(:first-child){text-align:right}
+.ptbl tr.ptot td{font-weight:600;border-top:.5px solid var(--bd2)}
+.ptbl tr.pgrand td{background:var(--ok-bg);color:var(--ok-t);font-weight:700;font-size:15px}
+.st-hdr{display:grid;grid-template-columns:1fr 1fr 1fr 36px;gap:8px;margin-bottom:6px}
+.st-hdr span{font-size:11px;color:var(--text3);text-align:center}
+.st-row{display:grid;grid-template-columns:1fr 1fr 1fr 36px;gap:8px;margin-bottom:6px;align-items:start}
+.st-row input{text-align:center}
+.st-warn{font-size:11px;color:var(--warn-t);margin-top:3px;display:none}
+.st-ok{font-size:11px;color:var(--ok-t);margin-top:3px;display:none}
+.sug-btn{display:inline-block;margin:2px 4px;padding:2px 8px;border:.5px solid var(--warn-t);border-radius:var(--rs);cursor:pointer;font-size:12px;color:var(--warn-t);background:transparent}
+.sug-btn:hover{background:var(--warn-bg)}
+
+@media print {
+  @page { margin: 1cm; size: A4 landscape; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { background: #fff !important; padding: 0; font-size: 10px !important; color: #000 !important; }
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+  .btnp, .btn, button { display: none !important; }
+  input, select { border: none !important; background: transparent !important; color: #000 !important; }
+  .res { display: block !important; }
+  .wrap { max-width: 100% !important; }
+  .card {
+    border: 0.5px solid #999 !important;
+    margin-bottom: 6px !important;
+    padding: 6px 8px !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .ct { font-size: 9px !important; margin-bottom: 6px !important; }
+  table { font-size: 9px !important; width: 100% !important; table-layout: auto; }
+  th { padding: 3px 4px !important; font-size: 9px !important; white-space: normal !important; }
+  td { padding: 3px 4px !important; font-size: 9px !important; }
+  .tblw { overflow: visible !important; }
+  .mg { grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)) !important; gap: 6px !important; }
+  .m { padding: 6px 4px !important; }
+  .m .n { font-size: 14px !important; }
+  .m .l, .m .u { font-size: 9px !important; }
+  .split { grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
+  h1 { font-size: 14px !important; margin-bottom: 2px !important; }
+  .sub { font-size: 10px !important; margin-bottom: 6px !important; }
+  .banner { padding: 4px 8px !important; font-size: 9px !important; margin-bottom: 4px !important; }
+  .note { font-size: 9px !important; }
+  svg { max-width: 100% !important; height: auto !important; display: block !important; }
+  #print-schemat-clone { display: block !important; }
+  #print-schemat-clone svg { width: 100% !important; height: auto !important; }
+  /* Kolory kart metryk */
+  .m.ok { background: #eaf3de !important; }
+  .m.info { background: #e6f1fb !important; }
+  .m.warn { background: #faeeda !important; }
+  tr.sum td { background: #f0f0ee !important; }
+  tr.pgrand td { background: #eaf3de !important; }
+}
+@media screen {
+  .print-only { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1><i class="ti ti-tool" aria-hidden="true"></i> Kalkulator desek tarasowych</h1>
+<p class="sub">Oblicz ilość desek, odpad, akcesoria i koszty</p>
+
+<div class="card">
+  <p class="ct">Parametry deski</p>
+  <div class="g4">
+    <div class="f"><label>Szerokość deski [cm]</label><input type="number" id="szer" value="11.8" step="0.1" min="1"></div>
+    <div class="f"><label>Szczelina [cm]</label><input type="number" id="szcz" value="0.66" step="0.01" min="0"></div>
+    <div class="f"><label>Długość deski [cm]</label><input type="number" id="dlbal" value="450" step="10" min="10"></div>
+    <div class="f"><label>Zapas [%]</label><input type="number" id="zapas" value="5" step="1" min="0" max="50"></div>
+  </div>
+  <p class="note">Podziałka: <strong id="pval">12.46 cm</strong></p>
+</div>
+
+<div class="card">
+  <p class="ct">Odcinki tarasu</p>
+  <div class="ehdr"><span>Długość cięcia [cm]</span><span>Odcinek szerokości [cm]</span><span></span></div>
+  <div id="entries"></div>
+  <button class="btn" onclick="addRow()"><i class="ti ti-plus" aria-hidden="true"></i> Dodaj odcinek</button>
+</div>
+
+<div class="card">
+  <p class="ct">Opaska</p>
+  <div class="togrow">
+    <input type="checkbox" id="op-on" onchange="document.getElementById('op-body').style.display=this.checked?'block':'none'">
+    <label for="op-on">Uwzględnij opaskę</label>
+  </div>
+  <div id="op-body" style="display:none">
+    <div class="f" style="max-width:220px;margin-bottom:12px">
+      <label>Szerokość krycia opaski [cm]</label>
+      <input type="number" id="op-szer" value="60" step="1" min="1" oninput="updStopnie()">
+    </div>
+    <hr class="sep">
+    <p style="font-size:12px;color:var(--text2);margin-bottom:8px">Krawędzie opaski — resztka trafia do wspólnej puli:</p>
+    <div class="ehdr1"><span>Długość krawędzi [cm]</span><span></span></div>
+    <div id="op-entries"></div>
+    <button class="btn" onclick="addOpRow()"><i class="ti ti-plus" aria-hidden="true"></i> Dodaj krawędź</button>
+    <hr class="sep">
+    <p style="font-size:12px;color:var(--text2);margin-bottom:10px"><strong>Optymalizacja odpadów</strong></p>
+    <div class="togrow"><input type="checkbox" id="rec-t" checked><label for="rec-t">Odpady z tarasu → opaska</label></div>
+    <div class="togrow"><input type="checkbox" id="rec-o" checked><label for="rec-o">Odpady z opaski → kolejne krawędzie</label></div>
+    <div class="opt-grid">
+      <div class="f"><label>Min. długość odpadu [cm]</label><input type="number" id="min-od" value="20" step="5" min="1"></div>
+      <div class="f"><label>Max złączeń na 1 pasie</label>
+        <select id="max-zl">
+          <option value="0">0 — tylko całe deski</option>
+          <option value="1" selected>1 — max 2 kawałki</option>
+          <option value="2">2 — max 3 kawałki</option>
+          <option value="3">3 — max 4 kawałki</option>
+          <option value="99">bez ograniczeń</option>
+        </select>
+      </div>
+      <div class="f"><label>Kolejność użycia odpadów</label>
+        <select id="pool-ord">
+          <option value="desc">Największe najpierw</option>
+          <option value="asc">Najmniejsze najpierw</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="ct">Stopnie</p>
+  <div class="togrow">
+    <input type="checkbox" id="st-on" onchange="toggleStopnie()">
+    <label for="st-on">Uwzględnij stopnie</label>
+  </div>
+  <div id="st-body" style="display:none">
+    <div class="g2" style="margin-bottom:12px;max-width:460px">
+      <div class="f">
+        <label>Wysokość stopnia — podstopnica [cm]</label>
+        <input type="number" id="st-wys" value="18" step="1" min="5" max="30" oninput="updStopnie();suggestStopnie()">
+      </div>
+      <div class="f">
+        <label style="opacity:0">_</label>
+        <div id="st-sugestia" class="note" style="padding-top:8px">Zalecana wysokość: 15–20 cm</div>
+      </div>
+    </div>
+    <hr class="sep">
+    <p style="font-size:12px;color:var(--text2);margin-bottom:8px"><strong>Zestawy stopni:</strong></p>
+    <div class="st-hdr">
+      <span>Długość stopnia [cm]</span>
+      <span>Szer. stopnicy — tread [cm]</span>
+      <span>Liczba stopni</span>
+      <span></span>
+    </div>
+    <div id="st-entries"></div>
+    <button class="btn" onclick="addStopien()"><i class="ti ti-plus" aria-hidden="true"></i> Dodaj zestaw</button>
+    <hr class="sep">
+    <div class="togrow" style="margin-bottom:4px">
+      <input type="checkbox" id="st-odejmij" checked>
+      <label for="st-odejmij" style="font-size:13px;cursor:pointer">Odejmij długość zejścia od opaski bocznej (podstopnica zastępuje opaskę)</label>
+    </div>
+    <hr class="sep">
+    <p style="font-size:12px;color:var(--text2);margin-bottom:8px"><strong>Schemat przekroju stopnia:</strong></p>
+    <div id="st-schemat" style="max-width:580px;margin-top:4px"></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="ct">Rozstaw mocowań</p>
+  <div class="togrow">
+    <input type="checkbox" id="moc-on" onchange="toggleMoc()">
+    <label for="moc-on">Oblicz liczbę mocowań na podstawie rozstawu</label>
+  </div>
+  <div id="moc-body" style="display:none">
+    <div class="g3">
+      <div class="f"><label>Rozstaw — taras [cm]</label><input type="number" id="moc-r" value="40" step="5" min="1"></div>
+      <div class="f" id="moc-op-f" style="display:none"><label>Rozstaw — opaska [cm]</label><input type="number" id="moc-r-op" value="40" step="5" min="1"></div>
+      <div class="f" style="justify-content:flex-end;padding-bottom:2px">
+        <div class="togrow" style="margin-bottom:0">
+          <input type="checkbox" id="moc-split" onchange="document.getElementById('moc-op-f').style.display=this.checked?'block':'none'">
+          <label for="moc-split" style="font-size:12px">Osobny rozstaw dla opaski</label>
+        </div>
+      </div>
+    </div>
+    <p class="note">Mocowania/pas = ceil(długość / rozstaw) + 1</p>
+  </div>
+</div>
+
+<div class="card">
+  <p class="ct">Cena desek</p>
+  <div class="g3">
+    <div class="f"><label>Cena netto za m² [zł]</label><input type="number" id="c-m2" value="" step="0.01" min="0" placeholder="np. 240.00"></div>
+    <div class="f"><label>Cena netto za mb [zł]</label><input type="number" id="c-mb" value="" step="0.01" min="0" placeholder="np. 28.50"></div>
+    <div class="f"><label>VAT [%]</label><input type="number" id="c-vat" value="23" step="1" min="0" max="100"></div>
+  </div>
+  <p class="note">m² ma pierwszeństwo. Kalkulator liczy od ilości z zapasem.</p>
+</div>
+
+<div class="card">
+  <p class="ct">Akcesoria i dodatki</p>
+  <div class="ahdr">
+    <span style="text-align:left">Nazwa</span>
+    <span>Tryb ilości</span>
+    <span>Ilość / wartość</span>
+    <span>Cena netto [zł]</span>
+    <span>VAT [%]</span>
+    <span>Uwzgl.</span>
+    <span></span>
+  </div>
+  <div id="acc-entries"></div>
+  <button class="btn" onclick="addAcc()"><i class="ti ti-plus" aria-hidden="true"></i> Dodaj akcesorium</button>
+  <p class="note" style="margin-top:8px">
+    Tryby: <strong>szt/m²</strong> — mnoży przez całk. powierzchnię z zapasem &nbsp;|&nbsp;
+    <strong>oblicz. moc.</strong> — używa obliczonej liczby mocowań &nbsp;|&nbsp;
+    <strong>ręcznie</strong> — wpisujesz całkowitą liczbę
+  </p>
+</div>
+
+<div class="card no-print" id="print-panel" style="display:none">
+  <p class="ct">Opcje wydruku — wybierz co drukować</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 24px">
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+      <input type="checkbox" id="pr-det-taras" checked> Szczegóły cięcia — taras</label>
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+      <input type="checkbox" id="pr-met-taras" checked> Podsumowanie tarasu</label>
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+      <input type="checkbox" id="pr-det-opaska" checked> Szczegóły krawędzi opaski</label>
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+      <input type="checkbox" id="pr-met-opaska" checked> Podsumowanie opaski</label>
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+      <input type="checkbox" id="pr-stopnie" checked> Szczegóły stopni</label>
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+      <input type="checkbox" id="pr-cennik" checked> Zestawienie kosztów</label>
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+      <input type="checkbox" id="pr-total" checked> Całkowite zamówienie</label>
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+      <input type="checkbox" id="pr-schemat" checked> Schemat stopni</label>
+  </div>
+  <button class="btn" style="margin-top:12px;border-color:#378add;color:#378add" onclick="drukuj()">
+    <i class="ti ti-printer" aria-hidden="true"></i> Drukuj / Zapisz PDF
+  </button>
+</div>
+
+<div class="card no-print">
+  <p class="ct">Zapisz / wczytaj konfigurację</p>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <button class="btn" onclick="zapiszKonfiguracje()"><i class="ti ti-download" aria-hidden="true"></i> Zapisz do pliku JSON</button>
+    <button class="btn" onclick="document.getElementById('wczytaj-input').click()"><i class="ti ti-upload" aria-hidden="true"></i> Wczytaj z pliku JSON</button>
+    <input type="file" id="wczytaj-input" accept=".json" style="display:none" onchange="wczytajKonfiguracje(event)">
+  </div>
+  <p class="note">Zapisuje wszystkie wpisane wartości (taras, opaska, stopnie, mocowania, cenę) do pliku, który możesz później wczytać i kontynuować edycję.</p>
+</div>
+
+<button class="btn btnp" onclick="calculate()"><i class="ti ti-calculator" aria-hidden="true"></i> Oblicz zamówienie i koszty</button>
+<button class="btn no-print" style="margin-top:8px;width:100%;justify-content:center" onclick="togglePrintPanel()"><i class="ti ti-printer" aria-hidden="true"></i> Przygotuj wydruk</button>
+
+<div class="res" id="results">
+  <div class="card" style="margin-top:1rem">
+    <p class="ct">Szczegóły cięcia — taras</p>
+    <div class="tblw">
+      <table>
+        <thead><tr>
+          <th>Cięcie [cm]</th><th>Odcinek [cm]</th><th>Pasów</th>
+          <th>Desek</th><th>Odpad [cm]</th><th>Netto [mb]</th><th>Netto [m²]</th>
+          <th id="th-mt1" style="display:none">Moc./pas</th>
+          <th id="th-mt2" style="display:none">Moc. łącznie</th>
+        </tr></thead>
+        <tbody id="tb-taras"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="split">
+    <div class="card"><p class="ct">Taras</p><div class="mg" id="m-taras"></div></div>
+    <div class="card" id="m-op-card" style="display:none">
+      <p class="ct">Opaska</p>
+      <div class="banner" id="bn-oszcz"></div>
+      <div class="mg" id="m-opaska"></div>
+    </div>
+  </div>
+
+  <div class="card" id="op-det-card" style="display:none">
+    <p class="ct">Szczegóły krawędzi opaski</p>
+    <div class="tblw">
+      <table>
+        <thead><tr>
+          <th>Krawędź [cm]</th><th>Z puli [cm]</th><th>Złączeń/pas</th>
+          <th>Desek/pas</th><th>Desek łącznie</th>
+          <th>Odpad [cm]</th><th>Netto [mb]</th><th>Netto [m²]</th>
+          <th id="th-mo1" style="display:none">Moc./pas</th>
+          <th id="th-mo2" style="display:none">Moc. łącznie</th>
+        </tr></thead>
+        <tbody id="tb-opaska"></tbody>
+      </table>
+    </div>
+    <div class="banner info" id="bn-pool" style="margin-top:10px"></div>
+  </div>
+
+  <div class="card" id="cennik-card" style="display:none">
+    <p class="ct">Zestawienie kosztów</p>
+    <div class="tblw">
+      <table class="ptbl">
+        <thead><tr>
+          <th style="text-align:left">Pozycja</th>
+          <th>Ilość</th><th>J.m.</th>
+          <th>Cena netto</th><th>Wartość netto</th>
+          <th>VAT %</th><th>Kwota VAT</th><th>Wartość brutto</th>
+        </tr></thead>
+        <tbody id="tb-cennik"></tbody>
+        <tfoot id="tf-cennik"></tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="ct">Całkowite zamówienie <span class="tag" id="ztag">z zapasem 5%</span></p>
+    <div class="mg" id="m-total"></div>
+  </div>
+</div>
+</div>
+
+<script>
+const DEF_TARAS  = [[109,459],[85,528],[97,402],[90,206],[82,547],[87,87],[430,774],[120,100],[224,340]];
+const DEF_OPASKA = [1070,321,774,746,100,708,547];
+const DEF_ACC    = [
+  {name:'Wkręty nierdzewne', mode:'per_m2', qty:18,  price:0.45, vat:23, on:true},
+  {name:'Mocowania ukryte',  mode:'moc',    qty:0,   price:1.20, vat:23, on:true},
+];
+
+const R2  = v => Math.round(v*100)/100;
+const R3  = v => Math.round(v*1000)/1000;
+const PLN = v => v.toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2})+' zł';
+const $   = id => document.getElementById(id);
+const num = id => parseFloat($(id).value)||0;
+
+function mkMetrics(data, el) {
+  el.innerHTML = data.map(([l,n,u,c])=>
+    `<div class="m${c?' '+c:''}"><div class="l">${l}</div><div class="n">${n}</div><div class="u">${u}</div></div>`
+  ).join('');
+}
+
+function addRow(d='', o='') {
+  const div = document.createElement('div');
+  div.className = 'erow';
+  div.innerHTML = `
+    <input type="number" class="dv" value="${d}" min="1" placeholder="np. 109">
+    <input type="number" class="ov" value="${o}" min="1" placeholder="np. 459">
+    <button class="delbtn" onclick="this.parentElement.remove()"><i class="ti ti-x"></i></button>`;
+  $('entries').appendChild(div);
+}
+
+function addOpRow(v='') {
+  const div = document.createElement('div');
+  div.className = 'erow1';
+  div.innerHTML = `
+    <input type="number" class="kv" value="${v}" min="1" placeholder="np. 1070">
+    <button class="delbtn" onclick="this.parentElement.remove()"><i class="ti ti-x"></i></button>`;
+  $('op-entries').appendChild(div);
+}
+
+function addAcc(a={}) {
+  const mode = a.mode||'per_m2';
+  const on   = a.on !== false;
+  const div  = document.createElement('div');
+  div.className = 'arow';
+  div.innerHTML = `
+    <input type="text"   class="a-name" value="${a.name||''}" placeholder="np. Wkręty">
+    <select class="a-mode" onchange="onModeChange(this)">
+      <option value="per_m2" ${mode==='per_m2'?'selected':''}>szt / m²</option>
+      <option value="moc"    ${mode==='moc'?'selected':''}>oblicz. moc.</option>
+      <option value="manual" ${mode==='manual'?'selected':''}>ręcznie (szt)</option>
+    </select>
+    <input type="number" class="a-qty"  value="${mode==='moc'?'':a.qty||''}" min="0" step="0.1"
+           placeholder="${mode==='per_m2'?'szt/m²':mode==='moc'?'(auto)':'szt'}"
+           ${mode==='moc'?'disabled':''}>
+    <input type="number" class="a-pr"   value="${a.price||''}" min="0" step="0.01" placeholder="cena netto">
+    <input type="number" class="a-vat"  value="${a.vat!==undefined?a.vat:23}" min="0" step="1">
+    <div class="achk"><input type="checkbox" class="a-on" ${on?'checked':''}></div>
+    <button class="delbtn" onclick="this.parentElement.remove()"><i class="ti ti-x"></i></button>`;
+  $('acc-entries').appendChild(div);
+}
+
+function onModeChange(sel) {
+  const row = sel.parentElement;
+  const inp = row.querySelector('.a-qty');
+  if (sel.value==='moc')     { inp.value=''; inp.placeholder='(auto)';  inp.disabled=true;  }
+  else if (sel.value==='per_m2') { inp.placeholder='szt/m²'; inp.disabled=false; }
+  else                           { inp.placeholder='szt';    inp.disabled=false; }
+}
+
+function addStopien(d='', s='', n='1') {
+  // Jeśli s puste - weź z pierwszego zestawu lub oblicz domyślną
+  if (!s) {
+    const first = document.querySelector('.st-s');
+    if (first && parseFloat(first.value) > 0) s = first.value;
+  }
+  const div = document.createElement('div');
+  div.className = 'st-row';
+  div.innerHTML = `
+    <input type="number" class="st-d" value="${d}" min="1" placeholder="np. 300" oninput="updStopnie()">
+    <div>
+      <input type="number" class="st-s" value="${s}" min="1" step="0.01" placeholder="np. 37.4" oninput="updStopnie()">
+      <div class="st-warn"></div>
+      <div class="st-ok"></div>
+    </div>
+    <input type="number" class="st-n" value="${n}" min="1" step="1" placeholder="1" oninput="updStopnie()">
+    <button class="delbtn" onclick="this.parentElement.remove();updStopnie()"><i class="ti ti-x"></i></button>`;
+  $('st-entries').appendChild(div);
+}
+
+function toggleStopnie() {
+  $('st-body').style.display = $('st-on').checked ? 'block' : 'none';
+  if ($('st-on').checked) {
+    // Ustaw domyślną szerokość stopnicy = min. komfortowe 28cm zaokrąglone do podziałki
+    const szerD = num('szer') || 11.8;
+    const szczD = num('szcz') || 0.66;
+    const podz  = szerD + szczD;
+    const minStopa = 28;  // min. komfortowa długość stopy w cm
+    const nPas  = Math.ceil(minStopa / podz);
+    const domSzer = R2(nPas * podz);
+    // Ustaw domyślne wartości dla pustych wierszy
+    document.querySelectorAll('.st-row').forEach(row => {
+      const inpS = row.querySelector('.st-s');
+      const inpD = row.querySelector('.st-d');
+      const inpN = row.querySelector('.st-n');
+      if (!inpS.value || parseFloat(inpS.value) < 1) inpS.value = domSzer;
+      if (!inpD.value || parseFloat(inpD.value) < 1) inpD.value = '';  // długość musi być wpisana
+      if (!inpN.value || parseInt(inpN.value) < 1)   inpN.value = 2;   // domyślnie 2 stopnie
+    });
+    updStopnie();
+  }
+}
+
+function toggleMoc() {
+  $('moc-body').style.display = $('moc-on').checked ? 'block' : 'none';
+}
+
+function suggestStopnie() {
+  const el = $('st-sugestia');
+  if (!el) return;
+  const wys = num('st-wys') || 18;
+  // Zbierz krawędzie opaski
+  const kvs = [...document.querySelectorAll('.kv')].map(i=>parseFloat(i.value)||0).filter(v=>v>0);
+  // Wysokość opaski = szerokość krycia opaski (to jest wysokość pionowa)
+  const opSzerV = num('op-szer') || 60;
+  if (!$('op-on').checked || opSzerV <= 0) {
+    el.textContent = 'Zalecana wysokość stopnia: 15–20 cm';
+    return;
+  }
+  // N stopni => N+1 podstopnic => wys = opSzerV / (N+1)
+  // Szukamy N gdzie 14 <= opSzerV/(N+1) <= 20
+  // N+1 = opSzerV/wys => N = opSzerV/wys - 1
+  const comfortable = h => h >= 14 && h <= 20;
+  let msg = `Wysokość opaski: ${opSzerV} cm → `;
+  const options = [];
+  for (let n = 1; n <= 10; n++) {
+    const h = R2(opSzerV / (n + 1));
+    if (comfortable(h)) options.push({n, h});
+  }
+  if (options.length > 0) {
+    msg += options.map(o => `<strong>${o.n} ${o.n===1?'stopień':'stopnie'}</strong> po ${o.h} cm`).join(' lub ');
+  } else {
+    // Najbliższa opcja
+    let best = 1, bestDiff = 999;
+    for (let n = 1; n <= 10; n++) {
+      const h = R2(opSzerV / (n+1));
+      const diff = Math.min(Math.abs(h-14), Math.abs(h-20));
+      if (diff < bestDiff) { bestDiff = diff; best = n; }
+    }
+    msg += `spróbuj ${best} stopni (${R2(opSzerV/(best+1))} cm/stopień)`;
+  }
+  el.innerHTML = msg;
+}
+
+function updStopnie() {
+  const szerD = num('szer')||11.8;
+  const szczD = num('szcz')||0.66;
+  const podz  = szerD + szczD;
+
+  // Auto-oblicz wysokość stopnia z liczby stopni i wysokości opaski
+  if ($('op-on') && $('op-on').checked) {
+    const opSzer = num('op-szer') || 0;
+    // Pobierz liczbę stopni z pierwszego zestawu
+    const firstN = document.querySelector('.st-n');
+    if (firstN && opSzer > 0) {
+      const n = parseInt(firstN.value) || 0;
+      if (n > 0) {
+        // N stopni = N+1 podstopnic, więc wys = opaska / (N+1)
+        const autoWys = R2(opSzer / (n + 1));
+        $('st-wys').value = autoWys;
+      }
+    }
+  }
+
+  suggestStopnie();
+
+  document.querySelectorAll('.st-row').forEach(row => {
+    const s    = parseFloat(row.querySelector('.st-s').value)||0;
+    const warn = row.querySelector('.st-warn');
+    const ok   = row.querySelector('.st-ok');
+    if (s<=0) { warn.style.display='none'; ok.style.display='none'; return; }
+    const nPas = s/podz;
+    const diff = Math.abs(nPas - Math.round(nPas));
+    if (diff > 0.02) {
+      const nD  = Math.floor(nPas), nU = Math.ceil(nPas);
+      const sD  = (nD*podz).toFixed(1), sU = (nU*podz).toFixed(1);
+      warn.style.display='block';
+      warn.innerHTML = `⚠ Nie jest wielokrotnością podziałki. Sugerowane:
+        <span class="sug-btn" onclick="setSt(this,${sD})">${sD} cm (${nD} deski)</span>
+        <span class="sug-btn" onclick="setSt(this,${sU})">${sU} cm (${nU} deski)</span>`;
+      ok.style.display='none';
+    } else {
+      ok.style.display='block';
+      ok.innerHTML = `✓ ${Math.round(nPas)} ${Math.round(nPas)===1?'deska':'deski'} = ${s} cm`;
+      warn.style.display='none';
+    }
+  });
+  if ($('st-on').checked) rysujSchemat();
+}
+
+function setSt(btn, val) {
+  btn.closest('div').querySelector('.st-s').value = val;
+  updStopnie();
+}
+
+function rysujSchemat() {
+  const wys   = num('st-wys') || 18;
+  const szerD = num('szer')   || 11.8;
+  const szczD = num('szcz')   || 0.66;
+  const podz  = szerD + szczD;
+  const firstRow = document.querySelector('.st-row');
+  const szerT = firstRow ? (parseFloat(firstRow.querySelector('.st-s').value)||R2(3*podz)) : R2(3*podz);
+  const nSt   = firstRow ? (parseInt(firstRow.querySelector('.st-n').value)||2) : 2;
+  const pasT  = Math.ceil(szerT / podz);
+  const pasR  = Math.ceil(wys / podz);
+
+  const sc     = 3.5;
+  const wysPx  = Math.max(44, Math.round(wys * sc));
+  const szerPx = Math.max(80, Math.round(szerT * sc));
+  const dH     = 18;
+  const rW     = Math.max(24, pasR * 12);
+  const over   = 5;
+
+  // N stopni = N stopnic + (N+1) podstopnic
+  const showN = Math.min(nSt, 4);
+  const showP = showN + 1;
+
+  const tarasX = 80, tarasW = 140;
+  const tarasY = 60;
+  const svgW = Math.max(680, tarasX + tarasW + showN*(szerPx - over) + showP*rW + 80);
+
+  // Oblicz pozycje wszystkich elementów w pierwszym przejściu
+  // żeby znać dokładny groundY przed rysowaniem
+  let simX = tarasX + tarasW;
+  let simY = tarasY;
+  let lastRiserBot = tarasY + dH + wysPx; // domyślnie
+  for (let i = 0; i < showP; i++) {
+    const riserTopY = simY + dH;
+    const riserBotY = riserTopY + wysPx;
+    lastRiserBot = riserBotY;
+    if (i < showN) {
+      simX = (simX - over) + rW + szerPx;
+      simY = riserBotY;
+    }
+  }
+  const groundY = lastRiserBot;  // grunt = koniec ostatniej podstopnicy
+  const svgH = groundY + 70;
+
+  let bg = '', fg = '';
+
+  // Nogi konstrukcji tarasu
+  bg += `<rect x="${tarasX+10}" y="${tarasY+dH}" width="12" height="${groundY-tarasY-dH}"
+    fill="var(--bg2)" stroke="var(--bd)" stroke-width="0.5"/>`;
+  bg += `<rect x="${tarasX+tarasW-22}" y="${tarasY+dH}" width="12" height="${groundY-tarasY-dH}"
+    fill="var(--bg2)" stroke="var(--bd)" stroke-width="0.5"/>`;
+
+  // Rysuj sekwencję
+  let curX    = tarasX + tarasW;
+  let curTopY = tarasY;
+
+  for (let i = 0; i < showP; i++) {
+    const riserX    = curX - over;
+    const riserTopY = curTopY + dH;
+    const riserBotY = riserTopY + wysPx;
+    const nextTopY  = riserBotY;
+    const treadX    = riserX + rW;
+
+    // Podstopnica
+    bg += `<rect x="${riserX}" y="${riserTopY}" width="${rW}" height="${wysPx}"
+      fill="#c0392b" stroke="#7a1a1a" stroke-width="1.5"/>`;
+    bg += `<text style="font:bold 13px Arial;fill:#fff"
+      x="${riserX+rW/2}" y="${riserTopY+wysPx/2}"
+      text-anchor="middle" dominant-baseline="central">P${i+1}</text>`;
+
+    // Wymiar wysokości przy P1
+    if (i === 0) {
+      bg += `<line x1="${tarasX-18}" y1="${riserTopY}" x2="${tarasX-18}" y2="${riserBotY}"
+        stroke="var(--text3)" stroke-width="0.7"
+        marker-start="url(#da)" marker-end="url(#da)"/>`;
+      bg += `<text style="font:12px Arial;fill:var(--text2)"
+        x="${tarasX-22}" y="${riserTopY+wysPx/2}"
+        text-anchor="end" dominant-baseline="central">${wys} cm</text>`;
+    }
+
+    // Stopnica (tylko między podstopnicami)
+    if (i < showN) {
+      bg += `<rect x="${treadX+10}" y="${nextTopY+dH}" width="12" height="${groundY-nextTopY-dH}"
+        fill="var(--bg2)" stroke="var(--bd)" stroke-width="0.5"/>`;
+      bg += `<rect x="${treadX+szerPx-22}" y="${nextTopY+dH}" width="12" height="${groundY-nextTopY-dH}"
+        fill="var(--bg2)" stroke="var(--bd)" stroke-width="0.5"/>`;
+
+      fg += `<rect x="${treadX}" y="${nextTopY}" width="${szerPx}" height="${dH}"
+        fill="#2a7a2a" stroke="#173404" stroke-width="1.5"/>`;
+      fg += `<text style="font:bold 13px Arial;fill:#fff"
+        x="${treadX+szerPx/2}" y="${nextTopY+dH/2}"
+        text-anchor="middle" dominant-baseline="central">stopnica ${i+1}</text>`;
+
+      if (i === 0) {
+        fg += `<line x1="${treadX}" y1="${groundY+18}" x2="${treadX+szerPx}" y2="${groundY+18}"
+          stroke="var(--text3)" stroke-width="0.7"
+          marker-start="url(#da)" marker-end="url(#da)"/>`;
+        fg += `<text style="font:12px Arial;fill:var(--text2)"
+          x="${treadX+szerPx/2}" y="${groundY+32}"
+          text-anchor="middle">${szerT.toFixed(1)} cm (${pasT} deski)</text>`;
+      }
+
+      curX    = treadX + szerPx;
+      curTopY = nextTopY;
+    }
+  }
+
+  // Grunt - dokładnie na końcu ostatniej podstopnicy
+  bg += `<rect x="${tarasX-20}" y="${groundY}" width="${svgW}" height="26"
+    fill="var(--bg2)" stroke="var(--bd)" stroke-width="0.5"/>`;
+  bg += `<line x1="${tarasX-20}" y1="${groundY}" x2="${svgW}" y2="${groundY}"
+    stroke="var(--text)" stroke-width="1.5" opacity="0.2"/>`;
+  bg += `<text style="font:bold 13px Arial;fill:var(--text3)"
+    x="${tarasX+tarasW/2}" y="${groundY+16}" text-anchor="middle">grunt</text>`;
+
+  if (nSt > 4) {
+    fg += `<text style="font:bold 15px Arial;fill:var(--text3)"
+      x="${curX+rW+15}" y="${groundY-wysPx/2}"
+      dominant-baseline="central">… (${nSt} stopni)</text>`;
+  }
+
+  // Taras - na wierzchu
+  fg += `<rect x="${tarasX}" y="${tarasY}" width="${tarasW}" height="${dH}"
+    fill="#1a5fa8" stroke="#0c447c" stroke-width="1.5"/>`;
+  fg += `<text style="font:bold 14px Arial;fill:#fff"
+    x="${tarasX+tarasW/2}" y="${tarasY+dH/2}"
+    text-anchor="middle" dominant-baseline="central">powierzchnia tarasu</text>`;
+  fg += `<text style="font:12px Arial;fill:var(--text2)"
+    x="${tarasX+tarasW/2}" y="${tarasY-8}" text-anchor="middle">taras</text>`;
+
+  // Legenda
+  const lgX = svgW-180, lgY = 8;
+  fg += `<rect x="${lgX}" y="${lgY}" width="168" height="70" rx="5"
+    fill="var(--bg)" stroke="var(--bd)" stroke-width="0.5"/>`;
+  fg += `<rect x="${lgX+10}" y="${lgY+10}" width="18" height="12" fill="#1a5fa8" stroke="#0c447c" stroke-width="1"/>`;
+  fg += `<text style="font:12px Arial;fill:var(--text2)" x="${lgX+34}" y="${lgY+19}" dominant-baseline="central">taras / stopnica</text>`;
+  fg += `<rect x="${lgX+10}" y="${lgY+28}" width="18" height="12" fill="#c0392b" stroke="#7a1a1a" stroke-width="1"/>`;
+  fg += `<text style="font:12px Arial;fill:var(--text2)" x="${lgX+34}" y="${lgY+37}" dominant-baseline="central">podstopnica P1…P${showP}</text>`;
+  fg += `<rect x="${lgX+10}" y="${lgY+46}" width="18" height="12" fill="var(--bg2)" stroke="var(--bd)" stroke-width="1"/>`;
+  fg += `<text style="font:12px Arial;fill:var(--text2)" x="${lgX+34}" y="${lgY+55}" dominant-baseline="central">konstrukcja nośna</text>`;
+
+  $('st-schemat').innerHTML = `<svg width="100%" viewBox="0 0 ${svgW} ${svgH}" role="img">
+<title>Przekrój boczny stopni tarasu</title>
+<desc>${showN} stopni = ${showP} podstopnic. Grunt przylega do końca ostatniej podstopnicy.</desc>
+<defs>
+  <marker id="da" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+    <path d="M2 2L8 5L2 8" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round"/>
+  </marker>
+</defs>
+${bg}${fg}</svg>`;
+}
+
+function updP() {
+  const s = num('szer'), g = num('szcz');
+  $('pval').textContent = (s+g).toFixed(2)+' cm';
+}
+$('szer').addEventListener('input', ()=>{ updP(); updStopnie(); });
+$('szcz').addEventListener('input', ()=>{ updP(); updStopnie(); });
+
+function uzyPuli(pool, potrzeba, maxZ, minO) {
+  if (maxZ===0||!pool.length) return {uzyto:0,zlaczen:0,pool:[...pool]};
+  const p=[...pool]; let uzyto=0,zlaczen=0;
+  for (let i=0;i<p.length&&zlaczen<maxZ&&uzyto<potrzeba;i++) {
+    if (p[i]>=minO) {
+      const b=Math.min(p[i],potrzeba-uzyto); uzyto+=b; zlaczen++;
+      p[i]-=b; if(p[i]<minO){p.splice(i,1);i--;}
+    }
+  }
+  return {uzyto,zlaczen,pool:p};
+}
+
+function priceRow(name,qty,unit,priceN,vatPct) {
+  const net=R2(qty*priceN), vat=R2(net*vatPct/100), bru=R2(net+vat);
+  return {name,qty,unit,priceN:R2(priceN),net,vatPct,vat,bru};
+}
+
+function $$(id,show) { const el=$(id); if(el) el.style.display=show?'':'none'; }
+
+function calculate() {
+  const szer  = num('szer')||11.8;
+  const szcz  = num('szcz')||0.66;
+  const dlbal = num('dlbal')||450;
+  const zapas = num('zapas')||5;
+  const podz  = szer+szcz;
+
+  $('ztag').textContent = `z zapasem ${zapas}%`;
+
+  const cases = [...document.querySelectorAll('.erow')].map(r=>[
+    parseFloat(r.querySelector('.dv').value),
+    parseFloat(r.querySelector('.ov').value)
+  ]).filter(([d,o])=>d>0&&o>0);
+  if (!cases.length) { alert('Dodaj co najmniej jeden odcinek tarasu.'); return; }
+
+  const mocOn   = $('moc-on').checked;
+  const mocR    = num('moc-r')||40;
+  const mocROp  = $('moc-split').checked ? (num('moc-r-op')||40) : mocR;
+
+  // ── TARAS ──
+  const tbT = $('tb-taras'); tbT.innerHTML='';
+  let tPasy=0,tDesek=0,tOcmSum=0,tNmb=0,tNm2=0,tMoc=0;
+  const odpadPool=[];  // pula odpadów → opaska → schody
+
+  for (const [d,o] of cases) {
+    const pasy  = Math.ceil(o/podz);
+    const szj   = Math.floor(dlbal/d);
+    const desek = szj>0 ? Math.ceil(pasy/szj) : pasy;
+    const ocm   = desek*dlbal - pasy*d;
+    const nmb   = R2(pasy*d/100);
+    const nm2   = R3(nmb*szer/100);
+    const mocPas  = mocOn ? Math.ceil(d/mocR)+1 : 0;
+    const mocLacz = mocPas*pasy;
+    tMoc+=mocLacz;
+    tPasy+=pasy; tDesek+=desek; tOcmSum+=ocm;
+    tNmb=R2(tNmb+nmb); tNm2=R3(tNm2+nm2);
+    // Zbierz odpady do puli dla opaski/schodów
+    if (szj>0) {
+      const od=dlbal-szj*d;
+      if (od>=1) {
+        const p=Math.floor(pasy/szj), r=pasy%szj;
+        for (let i=0;i<p;i++) odpadPool.push(od);
+        if (r>0){const o2=dlbal-r*d; if(o2>=1) odpadPool.push(o2);}
+      }
+    }
+    const mc = mocOn ? `<td>${mocPas}</td><td>${mocLacz}</td>` : '';
+    tbT.innerHTML += `<tr><td>${d}</td><td>${o}</td><td>${pasy}</td><td>${desek}</td><td>${ocm}</td><td>${nmb}</td><td>${nm2}</td>${mc}</tr>`;
+  }
+  ['th-mt1','th-mt2'].forEach(id=>$$(id,mocOn));
+  const mcT = mocOn ? `<td></td><td>${tMoc}</td>` : '';
+  tbT.innerHTML += `<tr class="sum"><td colspan="2">Suma</td><td>${tPasy}</td><td>${tDesek}</td><td>${tOcmSum}</td><td>${tNmb}</td><td>${tNm2}</td>${mcT}</tr>`;
+
+  const tBmb=R2(tDesek*dlbal/100), tOmb=R2(tOcmSum/100);
+  const tZs=Math.ceil(tDesek*(1+zapas/100)), tZmb=R2(tBmb*(1+zapas/100)), tZm2=R3(tZmb*szer/100);
+  const mTd=[['Netto m²',tNm2,'m²',''],['Netto mb',tNmb,'mb',''],['Odpad',tOmb,'mb','warn'],
+    [`Zamów szt (+${zapas}%)`,tZs,'szt','ok'],[`Zamów mb (+${zapas}%)`,tZmb,'mb','ok'],[`Zamów m² (+${zapas}%)`,tZm2,'m²','ok']];
+  if (mocOn) mTd.push(['Mocowania',tMoc,'szt','info']);
+  mkMetrics(mTd,$('m-taras'));
+
+  // ── OPASKA ──
+  let oDesek=0,oNmb=0,oNm2=0,oBmb=0,oOmb=0,oZs=0,oZmb=0,oZm2=0,oMoc=0;
+  const opaOn=$('op-on').checked;
+
+  if (opaOn) {
+    const opSzer=num('op-szer')||60;
+    const nPas=Math.ceil(opSzer/podz);
+    const krawedzie=[...document.querySelectorAll('.kv')].map(i=>parseFloat(i.value)).filter(v=>v>0);
+    if (!krawedzie.length){alert('Dodaj co najmniej jedną krawędź opaski.');return;}
+    const doRT=$('rec-t').checked, doRO=$('rec-o').checked;
+    const minO=num('min-od')||20, maxZ=parseInt($('max-zl').value), ord=$('pool-ord').value;
+    let pool=doRT?[...odpadPool.filter(v=>v>=minO)]:[];
+    const sortP=()=>pool.sort((a,b)=>ord==='desc'?b-a:a-b); sortP();
+    const tbO=$('tb-opaska'); tbO.innerHTML='';
+    let okD=0,okOcm=0,okNmb=0,okNm2=0,desBezOpt=0,totUzyto=0;
+
+    for (const k of krawedzie) {
+      desBezOpt+=Math.ceil(k/dlbal)*nPas;
+      let potrzeba=k,uzPuli=0,zlaczen=0;
+      if (pool.length>0&&maxZ>0) {
+        const res=uzyPuli(pool,potrzeba,maxZ,minO);
+        uzPuli=res.uzyto; zlaczen=res.zlaczen; pool=res.pool;
+        potrzeba-=uzPuli; totUzyto+=uzPuli;
+      }
+      let dNaPas=0,odpadNaPas=0;
+      if (potrzeba>0) {
+        dNaPas=Math.ceil(potrzeba/dlbal); odpadNaPas=dNaPas*dlbal-potrzeba;
+        if (doRO&&odpadNaPas>=minO){pool.push(odpadNaPas);sortP();}
+      }
+      const desek=dNaPas*nPas, ocm=odpadNaPas*nPas;
+      const nmb=R2(nPas*k/100), nm2=R3(nmb*szer/100);
+      const mocPasO=mocOn?Math.ceil(k/mocROp)+1:0, mocLaczO=mocPasO*nPas;
+      oMoc+=mocLaczO;
+      okD+=desek; okOcm+=ocm; okNmb=R2(okNmb+nmb); okNm2=R3(okNm2+nm2);
+      const uzi=uzPuli>0?`${uzPuli} cm (${zlaczen} szt)`:'—';
+      const uzs=uzPuli>0?'color:var(--warn-t);font-weight:600':'color:var(--text3)';
+      const mcO=mocOn?`<td>${mocPasO}</td><td>${mocLaczO}</td>`:'';
+      tbO.innerHTML+=`<tr><td>${k}</td><td style="${uzs}">${uzi}</td><td>${zlaczen}</td><td>${dNaPas}</td><td>${desek}</td><td>${ocm>0?ocm:'—'}</td><td>${nmb}</td><td>${nm2}</td>${mcO}</tr>`;
+    }
+    ['th-mo1','th-mo2'].forEach(id=>$$(id,mocOn));
+    const mcOS=mocOn?`<td></td><td>${oMoc}</td>`:'';
+    tbO.innerHTML+=`<tr class="sum"><td>Suma</td><td></td><td></td><td></td><td>${okD}</td><td>${okOcm}</td><td>${R2(okOcm/100)}</td><td>${okNm2}</td>${mcOS}</tr>`;
+
+    const poolLeft=pool.filter(v=>v>=minO);
+    if (poolLeft.length){$('bn-pool').className='banner info on';$('bn-pool').innerHTML=`<i class="ti ti-recycle"></i> W puli pozostało <strong>${poolLeft.length} odpadów</strong> (${poolLeft.reduce((a,b)=>a+b,0)} cm).`;}
+    else $('bn-pool').className='banner';
+
+    oDesek=okD; oNmb=okNmb; oNm2=okNm2;
+    oBmb=R2(oDesek*dlbal/100); oOmb=R2(okOcm/100);
+    oZs=Math.ceil(oDesek*(1+zapas/100)); oZmb=R2(oBmb*(1+zapas/100)); oZm2=R3(oZmb*szer/100);
+    const saved=desBezOpt-okD;
+    if (saved>0){$('bn-oszcz').className='banner ok on';$('bn-oszcz').innerHTML=`<i class="ti ti-leaf"></i> Optymalizacja zaoszczędziła <strong>${saved} desek</strong> (${desBezOpt}→${okD}), użyto ${totUzyto} cm odpadów.`;}
+    else $('bn-oszcz').className='banner';
+    $('m-op-card').style.display='block'; $('op-det-card').style.display='block';
+    const mOp=[['Pasów',nPas,'szt','info'],['Netto m²',oNm2,'m²',''],['Netto mb',oNmb,'mb',''],['Odpad',oOmb,'mb','warn'],
+      [`Zamów szt (+${zapas}%)`,oZs,'szt','ok'],[`Zamów mb (+${zapas}%)`,oZmb,'mb','ok'],[`Zamów m² (+${zapas}%)`,oZm2,'m²','ok']];
+    if (mocOn) mOp.push(['Mocowania',oMoc,'szt','info']);
+    mkMetrics(mOp,$('m-opaska'));
+  } else {
+    $('m-op-card').style.display='none'; $('op-det-card').style.display='none';
+  }
+
+  // ── STOPNIE ──
+  let stDesekTread=0,stDesekRiser=0,stNm2Tread=0,stNm2Riser=0,stOpaskaOdjac=0,stMoc=0;
+  const stOn=$('st-on').checked;
+  if (stOn) {
+    const stWys=num('st-wys')||18;
+    const pasRiser=Math.ceil(stWys/podz);
+    const stData=[...document.querySelectorAll('.st-row')].map(r=>({
+      d:parseFloat(r.querySelector('.st-d').value)||0,
+      s:parseFloat(r.querySelector('.st-s').value)||0,
+      n:parseInt(r.querySelector('.st-n').value)||1,
+    })).filter(r=>r.d>0&&r.s>0);
+
+    let stHTML='';
+    for (const {d,s,n} of stData) {
+      const pasTread=Math.ceil(s/podz);
+      const szj=Math.floor(dlbal/d);
+      const desT1=szj>0?Math.ceil(pasTread/szj):pasTread;
+      const desR1=szj>0?Math.ceil(pasRiser/szj):pasRiser;
+      // N stopni = N stopnic + (N+1) podstopnic
+      const desT=desT1*n;
+      const desR=desR1*(n+1);
+      const nm2T=R3(pasTread*d/100*szer/100*n);
+      const nm2R=R3(pasRiser*d/100*szer/100*(n+1));
+      const doOdejmij = $('st-odejmij') && $('st-odejmij').checked;
+      const opOdj = doOdejmij ? d : 0;
+      stDesekTread+=desT; stDesekRiser+=desR;
+      stNm2Tread=R3(stNm2Tread+nm2T); stNm2Riser=R3(stNm2Riser+nm2R);
+      stOpaskaOdjac+=opOdj;
+      // Mocowania stopni
+      if (mocOn) {
+        // Stopnica: mocowania wzdłuż długości d, dla każdego pasa
+        const mocTread = (Math.ceil(d/mocR)+1) * pasTread * n;
+        // Podstopnica: mocowania wzdłuż długości d, dla każdego pasa
+        const mocRiser = (Math.ceil(d/mocROp)+1) * pasRiser * (n+1);
+        stMoc += mocTread + mocRiser;
+      }
+      stHTML+=`<tr>
+        <td>${d}</td><td>${n}</td>
+        <td>${desT}</td><td>${nm2T} m²</td>
+        <td>${desR}</td><td>${nm2R} m²</td>
+        <td>${desT+desR}</td>
+        <td>${opOdj > 0 ? '−'+opOdj+' cm' : '—'}</td>
+      </tr>`;
+    }
+
+    let stCard=$('st-result-card');
+    if (!stCard){stCard=document.createElement('div');stCard.id='st-result-card';stCard.className='card';$('cennik-card').parentElement.insertBefore(stCard,$('cennik-card'));}
+    stCard.style.display='block';
+    const stDesekTotal = stDesekTread + stDesekRiser;
+    const stBmb  = R2(stDesekTotal * dlbal / 100);
+    const stNm2  = R3((stNm2Tread + stNm2Riser));
+    const stZs   = Math.ceil(stDesekTotal * (1 + zapas/100));
+    const stZmb  = R2(stBmb * (1 + zapas/100));
+    const stZm2  = R3(stZmb * szer / 100);
+
+    stCard.innerHTML=`<p class="ct">Szczegóły stopni</p>
+      <div class="tblw"><table>
+        <thead><tr>
+          <th>Długość [cm]</th><th>Stopni</th>
+          <th>Stopnica: deski</th><th>Stopnica: m²</th>
+          <th>Podstopnice (n+1): deski</th><th>Podstopnica: m²</th>
+          <th>Łącznie desek</th><th>Opaska −</th>
+        </tr></thead>
+        <tbody>${stHTML}</tbody>
+        <tr class="sum">
+          <td colspan="2">Suma</td>
+          <td>${stDesekTread}</td><td>${stNm2Tread} m²</td>
+          <td>${stDesekRiser}</td><td>${stNm2Riser} m²</td>
+          <td>${stDesekTotal}</td>
+          <td>${stOpaskaOdjac > 0 ? '−'+stOpaskaOdjac+' cm' : '—'}</td>
+        </tr>
+      </table></div>
+      ${stOpaskaOdjac > 0 ? `<p class="note" style="margin-top:8px">Automatycznie odjęto <strong>${stOpaskaOdjac} cm</strong> z opaski (podstopnica zastępuje opaskę boczną).</p>` : ''}
+      <hr style="border:none;border-top:.5px solid var(--bd);margin:12px 0">
+      <p class="ct" style="margin-bottom:10px">Podsumowanie — stopnie łącznie</p>
+      <div class="mg">
+        <div class="m"><div class="l">Stopnice</div><div class="n">${stDesekTread}</div><div class="u">szt</div></div>
+        <div class="m"><div class="l">Podstopnice</div><div class="n">${stDesekRiser}</div><div class="u">szt</div></div>
+        <div class="m"><div class="l">Netto m²</div><div class="n">${stNm2}</div><div class="u">m²</div></div>
+        <div class="m warn"><div class="l">Netto mb</div><div class="n">${R2(stNm2Tread/szer*100+stNm2Riser/szer*100)}</div><div class="u">mb</div></div>
+        <div class="m ok"><div class="l">Zamów szt (+${zapas}%)</div><div class="n">${stZs}</div><div class="u">szt</div></div>
+        <div class="m ok"><div class="l">Zamów mb (+${zapas}%)</div><div class="n">${stZmb}</div><div class="u">mb</div></div>
+        <div class="m ok"><div class="l">Zamów m² (+${zapas}%)</div><div class="n">${stZm2}</div><div class="u">m²</div></div>
+        ${mocOn ? `<div class="m info"><div class="l">Mocowania łącznie</div><div class="n">${stMoc}</div><div class="u">szt</div></div>` : ''}
+      </div>`;
+  } else {
+    const stCard=$('st-result-card');
+    if (stCard) stCard.style.display='none';
+  }
+
+  const totalMoc = tMoc + oMoc + stMoc;
+
+  // ── TOTAL ──
+  const totDesekExtra=stDesekTread+stDesekRiser;
+  const totZsExtra=Math.ceil(totDesekExtra*(1+zapas/100));
+  const totBmbExtra=R2(totDesekExtra*dlbal/100);
+  const totZmbExtra=R2(totBmbExtra*(1+zapas/100));
+  const totNm2St=R3(stNm2Tread+stNm2Riser);
+  const totNetM2=R3(tNm2+oNm2+totNm2St);
+  const totZmb=R2(tZmb+oZmb+totZmbExtra);
+  const totZm2=R3(tZm2+oZm2+R3(totZmbExtra*szer/100));
+  const totZs=tZs+oZs+totZsExtra;
+  const totOdpad=R2(tOmb+oOmb);
+
+  // ── CENNIK ──
+  const cM2=num('c-m2'), cMb=num('c-mb'), cVat=num('c-vat')||23;
+  const accRows=[...document.querySelectorAll('.arow')].map(r=>({
+    name:r.querySelector('.a-name').value.trim(),
+    mode:r.querySelector('.a-mode').value,
+    qty:parseFloat(r.querySelector('.a-qty').value)||0,
+    price:parseFloat(r.querySelector('.a-pr').value)||0,
+    vat:parseFloat(r.querySelector('.a-vat').value)||0,
+    on:r.querySelector('.a-on').checked,
+  })).filter(a=>a.name&&a.price>0&&a.on);
+
+  const hasPrice=cM2>0||cMb>0||accRows.length>0;
+  const cc=$('cennik-card');
+  if (hasPrice) {
+    cc.style.display='block';
+    const tbC=$('tb-cennik'), tfC=$('tf-cennik');
+    tbC.innerHTML=''; tfC.innerHTML='';
+    const rows=[];
+    if (cM2>0||cMb>0) {
+      if (cM2>0) rows.push(priceRow('Deski tarasowe',totZm2,'m²',cM2,cVat));
+      else        rows.push(priceRow('Deski tarasowe',totZmb,'mb',cMb,cVat));
+    }
+    for (const a of accRows) {
+      let qty=0;
+      if      (a.mode==='per_m2') qty=Math.ceil(totNetM2*a.qty*(1+zapas/100));
+      else if (a.mode==='moc')    qty=totalMoc;
+      else if (a.mode==='manual') qty=Math.ceil(a.qty);
+      if (qty>0) rows.push(priceRow(a.name,qty,'szt',a.price,a.vat));
+    }
+    let gNet=0,gVat=0,gBru=0;
+    for (const r of rows) {
+      gNet=R2(gNet+r.net); gVat=R2(gVat+r.vat); gBru=R2(gBru+r.bru);
+      tbC.innerHTML+=`<tr><td>${r.name}</td><td>${r.qty.toLocaleString('pl-PL')}</td><td>${r.unit}</td><td>${PLN(r.priceN)}</td><td>${PLN(r.net)}</td><td>${r.vatPct}%</td><td>${PLN(r.vat)}</td><td>${PLN(r.bru)}</td></tr>`;
+    }
+    tfC.innerHTML=`<tr class="ptot"><td colspan="4">Razem netto</td><td>${PLN(gNet)}</td><td></td><td>${PLN(gVat)}</td><td>${PLN(gBru)}</td></tr>
+      <tr class="pgrand"><td colspan="6">ŁĄCZNA KWOTA BRUTTO</td><td colspan="2" style="text-align:right">${PLN(gBru)}</td></tr>`;
+    const mT=[['Odpad łączny',totOdpad,'mb','warn'],['Zamów — szt',totZs,'szt','ok'],['Zamów — mb',totZmb,'mb','ok'],['Zamów — m²',totZm2,'m²','ok']];
+    if (stOn&&totDesekExtra>0) mT.push(['w tym stopnie',totZsExtra,'szt','']);
+    if (mocOn) mT.push(['Mocowań łącznie',totalMoc,'szt','info']);
+    mT.push(['Razem netto',PLN(gNet),'','info'],['Razem brutto',PLN(gBru),'','ok']);
+    mkMetrics(mT,$('m-total'));
+  } else {
+    cc.style.display='none';
+    const mT=[['Odpad łączny',totOdpad,'mb','warn'],['Zamów — szt',totZs,'szt','ok'],['Zamów — mb',totZmb,'mb','ok'],['Zamów — m²',totZm2,'m²','ok']];
+    if (stOn&&totDesekExtra>0) mT.push(['w tym stopnie',totZsExtra,'szt','']);
+    if (mocOn) mT.push(['Mocowań łącznie',totalMoc,'szt','info']);
+    mkMetrics(mT,$('m-total'));
+  }
+
+  $('results').className='res on';
+  $('results').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ── DRUKOWANIE ──────────────────────────────────────────
+function togglePrintPanel() {
+  const p = $('print-panel');
+  if (!p) return;
+  if (p.style.display === 'none') {
+    if ($('results').className !== 'res on') {
+      alert('Najpierw oblicz zamówienie.');
+      return;
+    }
+    p.style.display = 'block';
+    p.scrollIntoView({behavior:'smooth', block:'start'});
+  } else {
+    p.style.display = 'none';
+  }
+}
+
+function drukuj() {
+  try {
+    const ukryte = [];
+
+    // Ukryj karty z formularzami wejściowymi
+    document.querySelectorAll('.card').forEach(card => {
+      if (card.id === 'print-panel') return;
+      const hasInput = card.querySelector('input[type=number], select, input[type=text]');
+      const hasResults = card.querySelector('table') || card.querySelector('.mg');
+      if (hasInput && !hasResults) {
+        card.classList.add('no-print');
+        ukryte.push({el: card, cls: 'no-print'});
+      }
+    });
+
+    // Mapowanie: [checkboxId, elementId, ukryj-jeśli-odznaczony]
+    const mapa = [
+      ['pr-det-taras',  'tb-taras'],
+      ['pr-met-taras',  'm-taras'],
+      ['pr-det-opaska', 'op-det-card'],
+      ['pr-met-opaska', 'm-op-card'],
+      ['pr-stopnie',    'st-result-card'],
+      ['pr-cennik',     'cennik-card'],
+      ['pr-total',      'm-total'],
+    ];
+
+    mapa.forEach(([cbId, elId]) => {
+      const cb = $(cbId);
+      if (!cb || cb.checked) return;
+      // Znajdź element lub jego kartę nadrzędną
+      const el = $(elId);
+      if (!el) return;
+      const target = el.classList.contains('card') ? el : (el.closest('.card') || el);
+      target.classList.add('no-print');
+      ukryte.push({el: target, cls: 'no-print'});
+    });
+
+    // Schemat SVG — skopiuj poza ukryty kontener
+    let svgClone = null;
+    const prSch = $('pr-schemat');
+    const stSch = $('st-schemat');
+    if (prSch && prSch.checked && stSch && stSch.innerHTML.trim()) {
+      svgClone = document.createElement('div');
+      svgClone.id = 'print-schemat-clone';
+      svgClone.className = 'card';
+      svgClone.innerHTML = '<p class="ct" style="margin-bottom:8px">Schemat przekroju stopnia</p>' + stSch.innerHTML;
+      const stCard = $('st-result-card');
+      if (stCard) stCard.after(svgClone);
+      else $('results').appendChild(svgClone);
+    }
+
+    window.print();
+
+    setTimeout(() => {
+      ukryte.forEach(({el, cls}) => el.classList.remove(cls));
+      if (svgClone) svgClone.remove();
+    }, 1500);
+
+  } catch(err) {
+    console.error('Błąd drukowania:', err);
+    window.print();
+  }
+}
+
+// ── ZAPISZ / WCZYTAJ KONFIGURACJĘ ───────────────────────
+function zbierzKonfiguracje() {
+  const pola = ['szer','szcz','dlbal','zapas','op-on','op-szer','rec-t','rec-o',
+    'min-od','max-zl','pool-ord','st-on','st-wys','st-odejmij','moc-on','moc-r',
+    'moc-split','moc-r-op','c-m2','c-mb','c-vat'];
+  const cfg = { _typ: 'kalkulator-desek-v1', pola: {} };
+  pola.forEach(id => {
+    const el = $(id);
+    if (!el) return;
+    if (el.type === 'checkbox') cfg.pola[id] = el.checked;
+    else cfg.pola[id] = el.value;
+  });
+
+  cfg.taras = [...document.querySelectorAll('.erow')].map(r => [
+    r.querySelector('.dv').value, r.querySelector('.ov').value
+  ]);
+  cfg.opaska = [...document.querySelectorAll('.kv')].map(i => i.value);
+  cfg.stopnie = [...document.querySelectorAll('.st-row')].map(r => [
+    r.querySelector('.st-d').value, r.querySelector('.st-s').value, r.querySelector('.st-n').value
+  ]);
+  cfg.akcesoria = [...document.querySelectorAll('.arow')].map(r => ({
+    name: r.querySelector('.a-name').value,
+    mode: r.querySelector('.a-mode').value,
+    qty:  r.querySelector('.a-qty').value,
+    price:r.querySelector('.a-pr').value,
+    vat:  r.querySelector('.a-vat').value,
+    on:   r.querySelector('.a-on').checked,
+  }));
+
+  return cfg;
+}
+
+function zapiszKonfiguracje() {
+  const cfg = zbierzKonfiguracje();
+  const blob = new Blob([JSON.stringify(cfg, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dt = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
+  a.href = url;
+  a.download = `taras_konfiguracja_${dt}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function wczytajKonfiguracje(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const cfg = JSON.parse(e.target.result);
+      if (cfg._typ !== 'kalkulator-desek-v1') {
+        alert('Ten plik nie jest konfiguracją kalkulatora desek.');
+        return;
+      }
+      // Wczytaj pola proste
+      Object.entries(cfg.pola || {}).forEach(([id, val]) => {
+        const el = $(id);
+        if (!el) return;
+        if (el.type === 'checkbox') el.checked = !!val;
+        else el.value = val;
+      });
+
+      // Wyczyść i wczytaj wiersze dynamiczne
+      $('entries').innerHTML = '';
+      (cfg.taras || []).forEach(([d,o]) => addRow(d,o));
+
+      $('op-entries').innerHTML = '';
+      (cfg.opaska || []).forEach(v => addOpRow(v));
+
+      $('st-entries').innerHTML = '';
+      (cfg.stopnie || []).forEach(([d,s,n]) => addStopien(d,s,n));
+
+      $('acc-entries').innerHTML = '';
+      (cfg.akcesoria || []).forEach(a => addAcc(a));
+
+      // Odśwież widoczność sekcji zależnych od checkboxów
+      document.getElementById('op-body').style.display = $('op-on').checked ? 'block' : 'none';
+      document.getElementById('st-body').style.display = $('st-on').checked ? 'block' : 'none';
+      document.getElementById('moc-body').style.display = $('moc-on').checked ? 'block' : 'none';
+      document.getElementById('moc-op-f').style.display = $('moc-split').checked ? 'block' : 'none';
+
+      updP();
+      if ($('st-on').checked) rysujSchemat();
+
+      alert('Konfiguracja wczytana. Kliknij "Oblicz" aby zobaczyć wyniki.');
+    } catch (err) {
+      alert('Błąd wczytywania pliku: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ── INICJALIZACJA ──
+DEF_TARAS.forEach(([d,o])=>addRow(d,o));
+DEF_OPASKA.forEach(v=>addOpRow(v));
+DEF_ACC.forEach(a=>addAcc(a));
+addStopien('','','1');
+updP();
+</script>
+</body>
+</html>
