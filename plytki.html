@@ -524,35 +524,41 @@ function rysujWizualizacje(tDl, tSzer, segX, segY, offsetPct, fuga, pDl, restMod
     const sy = segY[rowIdx];
     const y = sy.pos * scale;
     const h = sy.w * scale;
-    const isOddRow = offsetPct > 0 && (rowIdx % 2 === 1);
-    const shift = isOddRow ? offsetPx : 0;
 
-    const renderList = [];
-    for (const sx of segX) {
-      renderList.push({ x: sx.pos*scale - shift, w: sx.w*scale, cutX: sx.cut, realW: sx.w });
-    }
-    if (isOddRow) {
-      const last = segX[segX.length-1];
-      renderList.push({ x: (last.pos+last.w)*scale - shift, w: modulXcm*scale, cutX: true, realW: modulXcm });
+    // Pobierz segmenty X dla tego rzędu
+    let rowSegsX;
+    if (restMode && restOffsets && podzX > 0) {
+      const off = restOffsets[rowIdx] || 0;
+      rowSegsX = liczSegmentyReszta(tDl, podzX, off);
+    } else {
+      const isOddRow = offsetPct > 0 && (rowIdx % 2 === 1);
+      const shift = isOddRow ? offsetPx : 0;
+      rowSegsX = [];
+      for (const sx of segX) {
+        rowSegsX.push({pos: sx.pos - shift/scale, w: sx.w, cut: sx.cut});
+      }
+      if (isOddRow) {
+        const last = segX[segX.length-1];
+        rowSegsX.push({pos: (last.pos+last.w) - shift/scale, w: modulXcm, cut: true});
+      }
     }
 
-    for (const item of renderList) {
-      let xx = item.x, ww = item.w;
-      let clipL=0, clipR=0;
+    for (const sx of rowSegsX) {
+      let xx = sx.pos * scale, ww = sx.w * scale;
+      let clipL = 0;
       if (xx < 0) { clipL = -xx; xx = 0; ww -= clipL; }
-      if (xx + ww > tW) { clipR = (xx+ww)-tW; ww -= clipR; }
+      if (xx + ww > tW) { ww = tW - xx; }
       if (ww <= 0.5) continue;
 
-      // Płytka jest "docinkiem" jeśli ucięta w X LUB w Y (wiersz)
-      const isCut = item.cutX || sy.cut || clipL > 0.5 || clipR > 0.5;
-      const fill = isCut ? 'rgba(192,57,43,0.22)' : (colorToggle % 2 === 0 ? 'rgba(26,95,165,0.16)' : 'rgba(26,95,165,0.26)');
+      const isCut = sx.cut || sy.cut || clipL > 0.5;
+      const fill = isCut ? 'rgba(192,57,43,0.22)' : (colorToggle%2===0 ? 'rgba(26,95,165,0.16)' : 'rgba(26,95,165,0.26)');
       const stroke = isCut ? '#a32d2d' : '#1a5fa8';
 
       rects += `<rect x="${padLeft+xx}" y="${padTop+y}" width="${ww}" height="${h}" fill="${fill}" stroke="${stroke}" stroke-width="0.7"/>`;
       colorToggle++;
 
-      if (item.cutX && !isOddRow) {
-        const key = R2(item.realW);
+      if (sx.cut && rowIdx <= 1) {
+        const key = R2(sx.w);
         if (!uniqueDocinkiX.has(key)) uniqueDocinkiX.set(key, {x: padLeft+xx+ww/2});
       }
     }
