@@ -153,6 +153,7 @@ tr.sum td{background:var(--bg2);font-weight:600}
         <option value="50">1/2 (cegiełka klasyczna)</option>
         <option value="33.33">1/3</option>
         <option value="25">1/4</option>
+        <option value="rest">Resztka przechodzi do kolejnego rzędu</option>
       </select>
     </div>
     <hr class="sep">
@@ -277,8 +278,52 @@ function liczSegmenty(wymiar, podz, tryb) {
   return segs;
 }
 
+// Dla trybu "resztka przechodzi" buduj segmenty rzędów z uwzględnieniem przesunięcia
+function liczSegmentyReszta(wymiar, podz, startOffset) {
+  // startOffset = pozycja od której zaczyna się pierwszy segment (>0 = kawałek z poprzedniego rzędu)
+  const segs = [];
+  let pos = 0;
+
+  // Pierwsza płytka: jeśli startOffset > 0, to jest to resztka z poprzedniego rzędu
+  if (startOffset > 0.001) {
+    const firstW = R2(podz - startOffset);
+    if (firstW > 0.001 && firstW <= wymiar) {
+      segs.push({pos, w: firstW, cut: true, isRest: true}); // przycięta bo to resztka
+      pos += firstW;
+    }
+  }
+
+  // Pełne płytki
+  while (pos + podz <= wymiar + 0.001) {
+    segs.push({pos: R2(pos), w: podz, cut: false});
+    pos += podz;
+  }
+
+  // Ostatnia płytka (może być przycięta)
+  const lastW = R2(wymiar - pos);
+  if (lastW > 0.001) {
+    segs.push({pos: R2(pos), w: lastW, cut: true});
+  }
+
+  return segs;
+}
+
+// Oblicz sekwencję przesunięć gdy resztka przechodzi do kolejnego rzędu
+function obliczOffsetyReszta(wymiar, podz, nRzedow) {
+  const offsets = [0]; // pierwszy rząd zaczyna od 0
+  for (let i = 1; i < nRzedow; i++) {
+    const prev = offsets[i-1];
+    const segs = liczSegmentyReszta(wymiar, podz, prev);
+    const lastSeg = segs[segs.length - 1];
+    // Offset dla następnego rzędu = ile zostało z ostatniej płytki
+    const nextOffset = lastSeg.cut ? R2(podz - lastSeg.w) : 0;
+    offsets.push(nextOffset);
+  }
+  return offsets;
+}
+
 // Oblicza pozycje płytek dla jednego tarasu wg wybranych krawędzi cięcia
-function liczTaras(tDl, tSzer, pDl, pSzer, fuga, offsetPct, ciecieX, ciecieY) {
+function liczTaras(tDl, tSzer, pDl, pSzer, fuga, offsetPct, ciecieX, ciecieY, restMode=false) {
   const podzX = pDl + fuga;
   const podzY = pSzer + fuga;
 
@@ -287,8 +332,20 @@ function liczTaras(tDl, tSzer, pDl, pSzer, fuga, offsetPct, ciecieX, ciecieY) {
 
   const nX = segX.length;
   const nY = segY.length;
-  const hasOffset = offsetPct > 0;
-  const nXEff = hasOffset ? nX + 1 : nX;
+  const hasOffset = offsetPct > 0 || restMode;
+  // W trybie reszty nXEff = max kolumn w którymkolwiek rzędzie
+  let nXEff = hasOffset ? nX + 1 : nX;
+  if (restMode) {
+    // Oblicz ile kolumn max w dowolnym rzędzie
+    const podzX = pDl + fuga;
+    let maxCols = 0;
+    const tempOffsets = obliczOffsetyReszta(tDl, podzX, nY);
+    tempOffsets.forEach(off => {
+      const s = liczSegmentyReszta(tDl, podzX, off);
+      if (s.length > maxCols) maxCols = s.length;
+    });
+    nXEff = maxCols;
+  }
 
   const totalPlytek = nXEff * nY;
   const tarasM2 = R3(tDl * tSzer / 10000);
@@ -301,9 +358,12 @@ function liczTaras(tDl, tSzer, pDl, pSzer, fuga, offsetPct, ciecieX, ciecieY) {
   const docinkiX = [...new Set(segX.filter(s=>s.cut).map(s=>R2(s.w)))];
   const docinkiY = [...new Set(segY.filter(s=>s.cut).map(s=>R2(s.w)))];
 
+  // Oblicz offsety dla trybu reszty
+  const restOffsets = restMode ? obliczOffsetyReszta(tSzer > tDl ? tSzer : tDl, podzX, nY) : null;
+
   return {
     nX: nXEff, nY, totalPlytek, tarasM2, plytkaM2, bruttoM2, odpadM2, odpadPct,
-    segX, segY, docinkiX, docinkiY, podzX, podzY
+    segX, segY, docinkiX, docinkiY, podzX, podzY, restMode, restOffsets
   };
 }
 
@@ -317,6 +377,7 @@ function calculate() {
   const orient   = document.querySelector('input[name=orient]:checked').value;
   const ciecieX  = document.querySelector('input[name=ciecieX]:checked').value;
   const ciecieY  = document.querySelector('input[name=ciecieY]:checked').value;
+  const offsetVal = $('offset').value;
   const opSzt    = parseInt($('op-szt').value) || 0;
 
   let pDl = pDlRaw, pSzer = pSzerRaw;
@@ -346,7 +407,7 @@ function calculate() {
     </div>`;
 
   tarasy.forEach((t, idx) => {
-    const w = liczTaras(t.dl, t.szer, pDl, pSzer, fuga, offsetPct, ciecieX, ciecieY);
+    const w = liczTaras(t.dl, t.szer, pDl, pSzer, fuga, offsetPct, ciecieX, ciecieY, offsetVal === 'rest');
     sumaPlytek += w.totalPlytek;
     sumaTarasM2 = R3(sumaTarasM2 + w.tarasM2);
     sumaBruttoM2 = R3(sumaBruttoM2 + w.bruttoM2);
@@ -359,7 +420,7 @@ function calculate() {
       ? `<div class="banner" style="display:block;background:var(--info-bg);color:var(--info-t)"><i class="ti ti-ruler-2" aria-hidden="true"></i> Wymiary płytek do przycięcia — ${docinekParts.join(' &nbsp;|&nbsp; ')}</div>`
       : `<div class="banner" style="display:block;background:var(--ok-bg);color:var(--ok-t)"><i class="ti ti-check" aria-hidden="true"></i> Płytki mieszczą się idealnie — brak docinków.</div>`;
 
-    const vizSvg = rysujWizualizacje(t.dl, t.szer, w.segX, w.segY, offsetPct, fuga, pDl);
+    const vizSvg = rysujWizualizacje(t.dl, t.szer, w.segX, w.segY, offsetPct, fuga, pDl, w.restMode, w.restOffsets, w.podzX);
 
     const warnHTML = w.odpadPct > 20
       ? `<div class="banner warn on"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Odpad ${w.odpadPct}% jest wysoki — rozważ inny wymiar płytki lub orientację.</div>`
@@ -443,7 +504,7 @@ function calculate() {
   $('results').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
-function rysujWizualizacje(tDl, tSzer, segX, segY, offsetPct, fuga, pDl) {
+function rysujWizualizacje(tDl, tSzer, segX, segY, offsetPct, fuga, pDl, restMode=false, restOffsets=null, podzX=0) {
   const padTop = 36, padBottom = 46, padLeft = 56, padRight = 24;
   const maxPx = 540;
   const scale = Math.min(maxPx / tDl, (maxPx*0.6) / tSzer);
