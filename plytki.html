@@ -278,19 +278,16 @@ function liczSegmenty(wymiar, podz, tryb) {
   return segs;
 }
 
-// Dla trybu "resztka przechodzi" buduj segmenty rzędów z uwzględnieniem przesunięcia
-function liczSegmentyReszta(wymiar, podz, startOffset) {
-  // startOffset = pozycja od której zaczyna się pierwszy segment (>0 = kawałek z poprzedniego rzędu)
+// Dla trybu "resztka przechodzi": buduj segmenty jednego rzędu
+// offset = długość resztki z poprzedniego rzędu która zaczyna ten rząd
+function liczSegmentyReszta(wymiar, podz, offset, minResztka=20) {
   const segs = [];
   let pos = 0;
 
-  // Pierwsza płytka: jeśli startOffset > 0, to jest to resztka z poprzedniego rzędu
-  if (startOffset > 0.001) {
-    const firstW = R2(podz - startOffset);
-    if (firstW > 0.001 && firstW <= wymiar) {
-      segs.push({pos, w: firstW, cut: true, isRest: true}); // przycięta bo to resztka
-      pos += firstW;
-    }
+  // Pierwsza płytka: resztka z poprzedniego rzędu
+  if (offset > 0.001) {
+    segs.push({pos: 0, w: R2(offset), cut: true, isRest: true});
+    pos = offset;
   }
 
   // Pełne płytki
@@ -299,25 +296,29 @@ function liczSegmentyReszta(wymiar, podz, startOffset) {
     pos += podz;
   }
 
-  // Ostatnia płytka (może być przycięta)
-  const lastW = R2(wymiar - pos);
-  if (lastW > 0.001) {
-    segs.push({pos: R2(pos), w: lastW, cut: true});
+  // Ostatnia płytka (docinek)
+  const reszta = R2(wymiar - pos);
+  if (reszta > 0.01) {
+    segs.push({pos: R2(pos), w: reszta, cut: true});
   }
 
   return segs;
 }
 
-// Oblicz sekwencję przesunięć gdy resztka przechodzi do kolejnego rzędu
-function obliczOffsetyReszta(wymiar, podz, nRzedow) {
+// Oblicz offset (resztka) dla każdego rzędu
+function obliczOffsetyReszta(wymiar, podz, nRzedow, minResztka=20) {
   const offsets = [0]; // pierwszy rząd zaczyna od 0
   for (let i = 1; i < nRzedow; i++) {
     const prev = offsets[i-1];
-    const segs = liczSegmentyReszta(wymiar, podz, prev);
+    const segs = liczSegmentyReszta(wymiar, podz, prev, minResztka);
     const lastSeg = segs[segs.length - 1];
-    // Offset dla następnego rzędu = ile zostało z ostatniej płytki
-    const nextOffset = lastSeg.cut ? R2(podz - lastSeg.w) : 0;
-    offsets.push(nextOffset);
+    if (lastSeg && lastSeg.cut && !lastSeg.isRest) {
+      // Resztka z docinka na końcu rzędu
+      const resztaDoNast = R2(podz - lastSeg.w);
+      offsets.push(resztaDoNast >= minResztka ? resztaDoNast : 0);
+    } else {
+      offsets.push(0); // idealnie się zmieściło lub brak docinka
+    }
   }
   return offsets;
 }
@@ -359,7 +360,7 @@ function liczTaras(tDl, tSzer, pDl, pSzer, fuga, offsetPct, ciecieX, ciecieY, re
   const docinkiY = [...new Set(segY.filter(s=>s.cut).map(s=>R2(s.w)))];
 
   // Oblicz offsety dla trybu reszty
-  const restOffsets = restMode ? obliczOffsetyReszta(tSzer > tDl ? tSzer : tDl, podzX, nY) : null;
+  const restOffsets = restMode ? obliczOffsetyReszta(tDl, podzX, nY) : null;
 
   return {
     nX: nXEff, nY, totalPlytek, tarasM2, plytkaM2, bruttoM2, odpadM2, odpadPct,
