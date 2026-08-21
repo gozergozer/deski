@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulator płytek tarasowych</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fff;--bg2:#f7f7f5;--bg3:#efefec;
+  --text:#1a1a18;--text2:#6b6b68;--text3:#999994;
+  --bd:rgba(0,0,0,.12);--bd2:rgba(0,0,0,.2);
+  --ok-bg:#eaf3de;--ok-t:#3b6d11;
+  --err-bg:#fcebeb;--err-t:#a32d2d;
+  --info-bg:#e6f1fb;--info-t:#185fa5;
+  --warn-bg:#faeeda;--warn-t:#854f0b;
+  --r:10px;--rs:7px
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1e1e1c;--bg2:#2a2a28;--bg3:#333331;
+  --text:#f0f0ec;--text2:#a0a09c;--text3:#6b6b68;
+  --bd:rgba(255,255,255,.1);--bd2:rgba(255,255,255,.2);
+  --ok-bg:#173404;--ok-t:#97c459;
+  --err-bg:#501313;--err-t:#f09595;
+  --info-bg:#042c53;--info-t:#85b7eb;
+  --warn-bg:#412402;--warn-t:#ef9f27
+}}
+body{background:var(--bg3);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:14px;color:var(--text);padding:1.5rem 1rem;min-height:100vh}
+.wrap{max-width:960px;margin:0 auto}
+h1{font-size:20px;font-weight:600;margin-bottom:.2rem}
+.sub{font-size:13px;color:var(--text2);margin-bottom:1.5rem}
+.card{background:var(--bg);border:.5px solid var(--bd);border-radius:var(--r);padding:1.25rem;margin-bottom:1rem}
+.ct{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+@media(max-width:600px){.g3,.g4{grid-template-columns:1fr 1fr}}
+.f{display:flex;flex-direction:column;gap:5px}
+.f label{font-size:12px;color:var(--text2)}
+input[type=number],input[type=text],select{width:100%;padding:8px 10px;border:.5px solid var(--bd2);border-radius:var(--rs);background:var(--bg2);color:var(--text);font-size:14px;outline:none}
+input[type=number]:focus,select:focus{border-color:#378add;box-shadow:0 0 0 3px rgba(55,138,221,.15)}
+input[type=radio]{width:16px;height:16px;cursor:pointer;accent-color:#378add}
+.btn{padding:8px 16px;border:.5px solid var(--bd2);border-radius:var(--rs);background:transparent;color:var(--text);font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--bg2)}
+.btnp{width:100%;justify-content:center;padding:12px;font-size:15px;font-weight:500;margin-top:.5rem;border-color:#378add;color:#378add}
+.btnp:hover{background:rgba(55,138,221,.08)}
+.note{font-size:12px;color:var(--text2);margin-top:8px}
+.res{display:none}.res.on{display:block}
+.mg{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.m{background:var(--bg2);border-radius:var(--rs);padding:12px 10px;text-align:center}
+.m .l{font-size:11px;color:var(--text2);margin-bottom:4px}
+.m .n{font-size:20px;font-weight:600;color:var(--text);line-height:1.2}
+.m .u{font-size:11px;color:var(--text3)}
+.m.ok{background:var(--ok-bg)}.m.ok .n{color:var(--ok-t)}
+.m.info{background:var(--info-bg)}.m.info .n{color:var(--info-t)}
+.m.warn{background:var(--warn-bg)}.m.warn .n{color:var(--warn-t)}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--ok-bg);color:var(--ok-t);font-weight:600}
+.radio-group{display:flex;gap:16px;flex-wrap:wrap}
+.radio-opt{display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer}
+#viz-wrap,.viz-wrap{overflow-x:auto;background:var(--bg2);border-radius:var(--rs);padding:16px;display:flex;justify-content:center}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--bg2);padding:7px 10px;font-weight:600;font-size:11px;text-align:center;border-bottom:.5px solid var(--bd2)}
+td{padding:6px 10px;text-align:center;border-bottom:.5px solid var(--bd)}
+tr:last-child td{border-bottom:none}
+tr.sum td{background:var(--bg2);font-weight:600}
+.banner{border-radius:var(--rs);padding:10px 14px;font-size:13px;margin-bottom:12px;display:none}
+.banner.on{display:block}
+.banner.warn{background:var(--warn-bg);color:var(--warn-t)}
+.delbtn{width:36px;height:36px;border:.5px solid var(--bd2);border-radius:var(--rs);background:transparent;cursor:pointer;color:var(--text2);font-size:18px;display:flex;align-items:center;justify-content:center}
+.delbtn:hover{background:var(--err-bg);color:var(--err-t);border-color:transparent}
+.taras-block{border:.5px solid var(--bd2);border-radius:var(--rs);padding:14px;margin-bottom:12px;position:relative}
+.taras-block .taras-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.taras-block .taras-hdr span{font-size:13px;font-weight:600;color:var(--text2)}
+.sep{border:none;border-top:.5px solid var(--bd);margin:12px 0}
+
+@media print {
+  @page { margin: 1cm; size: A4 landscape; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { background: #fff !important; padding: 0; font-size: 10px !important; color: #000 !important; }
+  .no-print { display: none !important; }
+  .btnp, .btn, button, input, select { display: none !important; }
+  .wrap { max-width: 100% !important; }
+  .card {
+    border: 0.5px solid #999 !important;
+    margin-bottom: 6px !important;
+    padding: 6px 8px !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .ct { font-size: 9px !important; margin-bottom: 6px !important; }
+  table { font-size: 9px !important; }
+  th, td { padding: 3px 4px !important; font-size: 9px !important; }
+  .mg { grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)) !important; gap: 6px !important; }
+  .m { padding: 6px 4px !important; }
+  .m .n { font-size: 14px !important; }
+  .m .l, .m .u { font-size: 9px !important; }
+  h1 { font-size: 14px !important; margin-bottom: 2px !important; }
+  .sub { font-size: 10px !important; margin-bottom: 6px !important; }
+  .banner { padding: 4px 8px !important; font-size: 9px !important; }
+  .note { font-size: 9px !important; }
+  svg { max-width: 100% !important; height: auto !important; }
+  .m.ok { background: #eaf3de !important; }
+  .m.info { background: #e6f1fb !important; }
+  .m.warn { background: #faeeda !important; }
+  .viz-wrap { background: #fff !important; padding: 4px !important; }
+  /* Pokaż statyczne podsumowanie wartości wejściowych przy druku */
+  .print-summary { display: block !important; }
+}
+@media screen {
+  .print-summary { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1><i class="ti ti-grid-dots" aria-hidden="true"></i> Kalkulator płytek tarasowych</h1>
+  <p class="sub">Oblicz ilość płytek, fugi i odpad dla jednego lub wielu tarasów</p>
+
+  <div class="card">
+    <p class="ct">Liczba tarasów</p>
+    <div class="radio-group">
+      <label class="radio-opt"><input type="radio" name="trybTaras" value="jeden" checked onchange="toggleTrybTaras()"> Jeden taras</label>
+      <label class="radio-opt"><input type="radio" name="trybTaras" value="wiele" onchange="toggleTrybTaras()"> Wiele tarasów (osobne sekcje)</label>
+    </div>
+  </div>
+
+  <div id="tarasy-container"></div>
+
+  <div class="card" id="btn-dodaj-taras-card" style="display:none">
+    <button class="btn" onclick="addTaras()"><i class="ti ti-plus" aria-hidden="true"></i> Dodaj kolejny taras</button>
+  </div>
+
+  <div class="card">
+    <p class="ct">Wymiary płytki</p>
+    <div class="g3">
+      <div class="f"><label>Długość płytki [cm]</label><input type="number" id="p-dl" value="60" step="0.1" min="1"></div>
+      <div class="f"><label>Szerokość płytki [cm]</label><input type="number" id="p-szer" value="60" step="0.1" min="1"></div>
+      <div class="f"><label>Szerokość fugi [cm]</label><input type="number" id="p-fuga" value="0.3" step="0.05" min="0"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="ct">Układ płytek</p>
+    <div class="radio-group" style="margin-bottom:14px">
+      <label class="radio-opt"><input type="radio" name="orient" value="dl" checked> Płytka pozioma (długość wzdłuż tarasu)</label>
+      <label class="radio-opt"><input type="radio" name="orient" value="szer"> Płytka pionowa (obrót 90°)</label>
+    </div>
+    <div class="f" style="max-width:300px;margin-bottom:14px">
+      <label>Przesunięcie rzędów (układ cegiełka)</label>
+      <select id="offset">
+        <option value="0">Brak — układ równoległy</option>
+        <option value="50">1/2 (cegiełka klasyczna)</option>
+        <option value="33.33">1/3</option>
+        <option value="25">1/4</option>
+        <option value="rest">Resztka przechodzi do kolejnego rzędu</option>
+      </select>
+    </div>
+    <hr class="sep">
+    <p style="font-size:12px;color:var(--text2);margin-bottom:10px"><strong>Cięcie wzdłuż długości tarasu</strong></p>
+    <div class="radio-group" style="margin-bottom:14px">
+      <label class="radio-opt"><input type="radio" name="ciecieX" value="start" checked> Pełna płytka od lewej, docinek z prawej</label>
+      <label class="radio-opt"><input type="radio" name="ciecieX" value="end"> Docinek z lewej, pełna płytka z prawej</label>
+      <label class="radio-opt"><input type="radio" name="ciecieX" value="both"> Symetrycznie — docinek po obu stronach</label>
+    </div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:10px"><strong>Cięcie wzdłuż szerokości tarasu</strong></p>
+    <div class="radio-group">
+      <label class="radio-opt"><input type="radio" name="ciecieY" value="start" checked> Pełna płytka od góry, docinek z dołu</label>
+      <label class="radio-opt"><input type="radio" name="ciecieY" value="end"> Docinek z góry, pełna płytka z dołu</label>
+      <label class="radio-opt"><input type="radio" name="ciecieY" value="both"> Symetrycznie — docinek po obu stronach</label>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="ct">Zamówienie</p>
+    <div class="g2">
+      <div class="f"><label>Zapas [%]</label><input type="number" id="zapas" value="10" step="1" min="0" max="50"></div>
+      <div class="f"><label>Płytek w opakowaniu (opcjonalnie)</label><input type="number" id="op-szt" value="" step="1" min="1" placeholder="np. 4"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="ct">Cena płytek</p>
+    <div class="g3">
+      <div class="f"><label>Cena netto za m² [zł]</label><input type="number" id="c-m2" value="" step="0.01" min="0" placeholder="np. 120.00"></div>
+      <div class="f"><label>Cena netto za szt [zł]</label><input type="number" id="c-szt" value="" step="0.01" min="0" placeholder="np. 43.20"></div>
+      <div class="f"><label>VAT [%]</label><input type="number" id="c-vat" value="23" step="1" min="0" max="100"></div>
+    </div>
+    <p class="note">m² ma pierwszeństwo. Kalkulator liczy od ilości z zapasem.</p>
+  </div>
+
+  <div class="card no-print">
+  <p class="ct">Zapisz / wczytaj konfigurację</p>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <button class="btn" onclick="zapiszKonfiguracje()"><i class="ti ti-download" aria-hidden="true"></i> Zapisz do pliku JSON</button>
+    <button class="btn" onclick="document.getElementById('wczytaj-input').click()"><i class="ti ti-upload" aria-hidden="true"></i> Wczytaj z pliku JSON</button>
+    <input type="file" id="wczytaj-input" accept=".json" style="display:none" onchange="wczytajKonfiguracje(event)">
+  </div>
+  <p class="note">Zapisuje wymiary tarasów, płytek, układ i cenę do pliku, który możesz później wczytać i kontynuować edycję.</p>
+</div>
+
+<button class="btn btnp" onclick="calculate()"><i class="ti ti-calculator" aria-hidden="true"></i> Oblicz zamówienie</button>
+<button class="btn no-print" style="margin-top:8px;width:100%;justify-content:center" onclick="drukuj()"><i class="ti ti-printer" aria-hidden="true"></i> Drukuj / Zapisz PDF</button>
+
+  <div class="res" id="results"></div>
+</div>
+
+<script>
+const R2 = v => Math.round(v*100)/100;
+const R3 = v => Math.round(v*1000)/1000;
+const $  = id => document.getElementById(id);
+const num = id => parseFloat($(id).value)||0;
+const pln = v => v.toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2})+' zł';
+
+let tarasCount = 0;
+
+function addTaras(dl=500, szer=300) {
+  tarasCount++;
+  const id = tarasCount;
+  const div = document.createElement('div');
+  div.className = 'taras-block';
+  div.dataset.tarasId = id;
+  div.innerHTML = `
+    <div class="taras-hdr">
+      <span>Taras ${id}</span>
+      <button class="delbtn" onclick="this.closest('.taras-block').remove()" aria-label="Usuń taras"><i class="ti ti-x" aria-hidden="true"></i></button>
+    </div>
+    <div class="g2">
+      <div class="f"><label>Długość [cm]</label><input type="number" class="t-dl" value="${dl}" step="1" min="10"></div>
+      <div class="f"><label>Szerokość [cm]</label><input type="number" class="t-szer" value="${szer}" step="1" min="10"></div>
+    </div>`;
+  $('tarasy-container').appendChild(div);
+}
+
+function toggleTrybTaras() {
+  const tryb = document.querySelector('input[name=trybTaras]:checked').value;
+  const container = $('tarasy-container');
+  const blocks = container.querySelectorAll('.taras-block');
+
+  if (tryb === 'jeden') {
+    $('btn-dodaj-taras-card').style.display = 'none';
+    // Zostaw tylko pierwszy
+    blocks.forEach((b,i) => { if (i>0) b.remove(); });
+    container.querySelectorAll('.delbtn').forEach(b => b.style.display='none');
+  } else {
+    $('btn-dodaj-taras-card').style.display = 'block';
+    container.querySelectorAll('.delbtn').forEach(b => b.style.display='flex');
+  }
+}
+
+// Dzieli wymiar na segmenty (płytki) wg trybu cięcia: 'start'|'end'|'both'
+function liczSegmenty(wymiar, podz, tryb) {
+  const segs = [];
+  const nPelnych = Math.floor(wymiar / podz + 0.0001);
+  const reszta = R2(wymiar - nPelnych * podz);
+
+  if (tryb === 'both') {
+    if (reszta > 0.01) {
+      const docinek = R2(reszta / 2);
+      let pos = 0;
+      segs.push({pos, w: docinek, cut: true});
+      pos += docinek;
+      for (let i=0; i<nPelnych; i++) { segs.push({pos, w: podz, cut: false}); pos += podz; }
+      segs.push({pos, w: docinek, cut: true});
+    } else {
+      let pos = 0;
+      for (let i=0; i<nPelnych; i++) { segs.push({pos, w: podz, cut: false}); pos += podz; }
+    }
+  } else if (tryb === 'end') {
+    let pos = 0;
+    if (reszta > 0.01) { segs.push({pos, w: reszta, cut: true}); pos += reszta; }
+    for (let i=0; i<nPelnych; i++) { segs.push({pos, w: podz, cut: false}); pos += podz; }
+  } else { // 'start'
+    let pos = 0;
+    for (let i=0; i<nPelnych; i++) { segs.push({pos, w: podz, cut: false}); pos += podz; }
+    if (reszta > 0.01) segs.push({pos, w: reszta, cut: true});
+  }
+  return segs;
+}
+
+// Dla trybu "resztka przechodzi" buduj segmenty rzędów z uwzględnieniem przesunięcia
+function liczSegmentyReszta(wymiar, podz, startOffset) {
+  // startOffset = pozycja od której zaczyna się pierwszy segment (>0 = kawałek z poprzedniego rzędu)
+  const segs = [];
+  let pos = 0;
+
+  // Pierwsza płytka: jeśli startOffset > 0, to jest to resztka z poprzedniego rzędu
+  if (startOffset > 0.001) {
+    const firstW = R2(podz - startOffset);
+    if (firstW > 0.001 && firstW <= wymiar) {
+      segs.push({pos, w: firstW, cut: true, isRest: true}); // przycięta bo to resztka
+      pos += firstW;
+    }
+  }
+
+  // Pełne płytki
+  while (pos + podz <= wymiar + 0.001) {
+    segs.push({pos: R2(pos), w: podz, cut: false});
+    pos += podz;
+  }
+
+  // Ostatnia płytka (może być przycięta)
+  const lastW = R2(wymiar - pos);
+  if (lastW > 0.001) {
+    segs.push({pos: R2(pos), w: lastW, cut: true});
+  }
+
+  return segs;
+}
+
+// Oblicz sekwencję przesunięć gdy resztka przechodzi do kolejnego rzędu
+function obliczOffsetyReszta(wymiar, podz, nRzedow) {
+  const offsets = [0]; // pierwszy rząd zaczyna od 0
+  for (let i = 1; i < nRzedow; i++) {
+    const prev = offsets[i-1];
+    const segs = liczSegmentyReszta(wymiar, podz, prev);
+    const lastSeg = segs[segs.length - 1];
+    // Offset dla następnego rzędu = ile zostało z ostatniej płytki
+    const nextOffset = lastSeg.cut ? R2(podz - lastSeg.w) : 0;
+    offsets.push(nextOffset);
+  }
+  return offsets;
+}
+
+// Oblicza pozycje płytek dla jednego tarasu wg wybranych krawędzi cięcia
+function liczTaras(tDl, tSzer, pDl, pSzer, fuga, offsetPct, ciecieX, ciecieY, restMode=false) {
+  const podzX = pDl + fuga;
+  const podzY = pSzer + fuga;
+
+  const segX = liczSegmenty(tDl, podzX, ciecieX);
+  const segY = liczSegmenty(tSzer, podzY, ciecieY);
+
+  const nX = segX.length;
+  const nY = segY.length;
+  const hasOffset = offsetPct > 0 || restMode;
+  // W trybie reszty nXEff = max kolumn w którymkolwiek rzędzie
+  let nXEff = hasOffset ? nX + 1 : nX;
+  if (restMode) {
+    // Oblicz ile kolumn max w dowolnym rzędzie
+    const podzX = pDl + fuga;
+    let maxCols = 0;
+    const tempOffsets = obliczOffsetyReszta(tDl, podzX, nY);
+    tempOffsets.forEach(off => {
+      const s = liczSegmentyReszta(tDl, podzX, off);
+      if (s.length > maxCols) maxCols = s.length;
+    });
+    nXEff = maxCols;
+  }
+
+  const totalPlytek = nXEff * nY;
+  const tarasM2 = R3(tDl * tSzer / 10000);
+  const plytkaM2 = R3(pDl * pSzer / 10000);
+  const bruttoM2 = R3(totalPlytek * plytkaM2);
+  const odpadM2  = R3(bruttoM2 - tarasM2);
+  const odpadPct = R2(odpadM2 / bruttoM2 * 100);
+
+  // Unikalne wymiary docinków (do informacji)
+  const docinkiX = [...new Set(segX.filter(s=>s.cut).map(s=>R2(s.w)))];
+  const docinkiY = [...new Set(segY.filter(s=>s.cut).map(s=>R2(s.w)))];
+
+  // Oblicz offsety dla trybu reszty
+  const restOffsets = restMode ? obliczOffsetyReszta(tSzer > tDl ? tSzer : tDl, podzX, nY) : null;
+
+  return {
+    nX: nXEff, nY, totalPlytek, tarasM2, plytkaM2, bruttoM2, odpadM2, odpadPct,
+    segX, segY, docinkiX, docinkiY, podzX, podzY, restMode, restOffsets
+  };
+}
+
+function calculate() {
+  const pDlRaw   = num('p-dl')   || 60;
+  const pSzerRaw = num('p-szer') || 60;
+  const fuga     = num('p-fuga') || 0;
+  const zapasInp = $('zapas').value;
+  const zapas    = zapasInp === '' ? 10 : (parseFloat(zapasInp) || 0);
+  const offsetPct = parseFloat($('offset').value) || 0;
+  const orient   = document.querySelector('input[name=orient]:checked').value;
+  const ciecieX  = document.querySelector('input[name=ciecieX]:checked').value;
+  const ciecieY  = document.querySelector('input[name=ciecieY]:checked').value;
+  const offsetVal = $('offset').value;
+  const opSzt    = parseInt($('op-szt').value) || 0;
+
+  let pDl = pDlRaw, pSzer = pSzerRaw;
+  if (orient === 'szer') { pDl = pSzerRaw; pSzer = pDlRaw; }
+
+  const tarasy = [...document.querySelectorAll('.taras-block')].map(b => ({
+    id: b.dataset.tarasId,
+    dl: parseFloat(b.querySelector('.t-dl').value) || 0,
+    szer: parseFloat(b.querySelector('.t-szer').value) || 0,
+  })).filter(t => t.dl>0 && t.szer>0);
+
+  if (!tarasy.length) { alert('Dodaj co najmniej jeden taras.'); return; }
+
+  let sumaPlytek=0, sumaTarasM2=0, sumaBruttoM2=0, sumaOdpadM2=0;
+  const ciecieLabel = v => v==='start'?'pełna od początku':v==='end'?'pełna od końca':'symetrycznie';
+  let resHTML = `
+    <div class="card print-summary" style="display:none">
+      <p class="ct">Parametry obliczenia</p>
+      <table>
+        <tr><td>Płytka</td><td>${pDl} × ${pSzer} cm, fuga ${fuga} cm</td></tr>
+        <tr><td>Orientacja</td><td>${orient==='dl'?'pozioma':'pionowa (obrót 90°)'}</td></tr>
+        <tr><td>Przesunięcie rzędów</td><td>${offsetPct>0?offsetPct+'%':'brak (układ równoległy)'}</td></tr>
+        <tr><td>Cięcie wzdłuż długości</td><td>${ciecieLabel(ciecieX)}</td></tr>
+        <tr><td>Cięcie wzdłuż szerokości</td><td>${ciecieLabel(ciecieY)}</td></tr>
+        <tr><td>Zapas</td><td>${zapas}%</td></tr>
+      </table>
+    </div>`;
+
+  tarasy.forEach((t, idx) => {
+    const w = liczTaras(t.dl, t.szer, pDl, pSzer, fuga, offsetPct, ciecieX, ciecieY, offsetVal === 'rest');
+    sumaPlytek += w.totalPlytek;
+    sumaTarasM2 = R3(sumaTarasM2 + w.tarasM2);
+    sumaBruttoM2 = R3(sumaBruttoM2 + w.bruttoM2);
+    sumaOdpadM2 = R3(sumaOdpadM2 + w.odpadM2);
+
+    const docinekParts = [];
+    if (w.docinkiX.length) docinekParts.push(`<strong>wzdłuż długości:</strong> ${w.docinkiX.map(v=>v+' cm').join(', ')}`);
+    if (w.docinkiY.length) docinekParts.push(`<strong>wzdłuż szerokości:</strong> ${w.docinkiY.map(v=>v+' cm').join(', ')}`);
+    const docinekHTML = docinekParts.length
+      ? `<div class="banner" style="display:block;background:var(--info-bg);color:var(--info-t)"><i class="ti ti-ruler-2" aria-hidden="true"></i> Wymiary płytek do przycięcia — ${docinekParts.join(' &nbsp;|&nbsp; ')}</div>`
+      : `<div class="banner" style="display:block;background:var(--ok-bg);color:var(--ok-t)"><i class="ti ti-check" aria-hidden="true"></i> Płytki mieszczą się idealnie — brak docinków.</div>`;
+
+    const vizSvg = rysujWizualizacje(t.dl, t.szer, w.segX, w.segY, offsetPct, fuga, pDl, w.restMode, w.restOffsets, w.podzX);
+
+    const warnHTML = w.odpadPct > 20
+      ? `<div class="banner warn on"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Odpad ${w.odpadPct}% jest wysoki — rozważ inny wymiar płytki lub orientację.</div>`
+      : '';
+
+    resHTML += `
+      <div class="card" style="margin-top:1rem">
+        <p class="ct">${tarasy.length>1 ? `Taras ${idx+1} — wizualizacja` : 'Wizualizacja układu'}</p>
+        ${warnHTML}
+        <div class="viz-wrap">${vizSvg}</div>
+        ${docinekHTML}
+      </div>
+
+      <div class="card">
+        <p class="ct">${tarasy.length>1 ? `Taras ${idx+1} — podsumowanie` : 'Podsumowanie'}</p>
+        <div class="mg">
+          <div class="m"><div class="l">Powierzchnia</div><div class="n">${w.tarasM2}</div><div class="u">m²</div></div>
+          <div class="m"><div class="l">Płytek</div><div class="n">${w.totalPlytek}</div><div class="u">szt</div></div>
+          <div class="m warn"><div class="l">Odpad</div><div class="n">${w.odpadM2}</div><div class="u">m² (${w.odpadPct}%)</div></div>
+          <div class="m info"><div class="l">Układ</div><div class="n">${w.nX}×${w.nY}</div><div class="u">kolumny×rzędy</div></div>
+        </div>
+      </div>`;
+  });
+
+  // ŁĄCZNE ZAMÓWIENIE
+  const zSzt = Math.ceil(sumaPlytek * (1 + zapas/100));
+  const plytkaM2 = R3(pDl * pSzer / 10000);
+  const zM2 = R3(zSzt * plytkaM2);
+
+  let opakInfo = '';
+  if (opSzt > 0) {
+    const opak = Math.ceil(zSzt / opSzt);
+    opakInfo = `<div class="m info"><div class="l">Opakowań</div><div class="n">${opak}</div><div class="u">szt (${opSzt}/op.)</div></div>`;
+  }
+
+  resHTML += `
+    <div class="card">
+      <p class="ct">${tarasy.length>1 ? 'Łączne zamówienie (wszystkie tarasy)' : 'Zamówienie'} <span class="tag">z zapasem ${zapas}%</span></p>
+      <div class="mg">
+        <div class="m"><div class="l">Powierzchnia łącznie</div><div class="n">${sumaTarasM2}</div><div class="u">m²</div></div>
+        <div class="m"><div class="l">Płytek potrzebnych</div><div class="n">${sumaPlytek}</div><div class="u">szt</div></div>
+        <div class="m warn"><div class="l">Odpad łącznie</div><div class="n">${sumaOdpadM2}</div><div class="u">m²</div></div>
+        <div class="m ok"><div class="l">Zamów</div><div class="n">${zSzt}</div><div class="u">szt</div></div>
+        <div class="m ok"><div class="l">Zamów</div><div class="n">${zM2}</div><div class="u">m²</div></div>
+        ${opakInfo}
+      </div>
+    </div>`;
+
+  // CENNIK
+  const cM2  = parseFloat($('c-m2').value)  || 0;
+  const cSzt = parseFloat($('c-szt').value) || 0;
+  const cVat = parseFloat($('c-vat').value) || 23;
+
+  if (cM2 > 0 || cSzt > 0) {
+    let qty, unit, priceN;
+    if (cM2 > 0) { qty = zM2; unit = 'm²'; priceN = cM2; }
+    else         { qty = zSzt; unit = 'szt'; priceN = cSzt; }
+    const net = R2(qty * priceN);
+    const vat = R2(net * cVat / 100);
+    const bru = R2(net + vat);
+    resHTML += `
+      <div class="card">
+        <p class="ct">Koszt płytek</p>
+        <table>
+          <thead><tr><th style="text-align:left">Pozycja</th><th>Ilość</th><th>J.m.</th><th>Cena netto</th><th>Netto</th><th>VAT</th><th>Brutto</th></tr></thead>
+          <tbody><tr>
+            <td style="text-align:left">Płytki tarasowe</td>
+            <td>${qty.toLocaleString('pl-PL')}</td><td>${unit}</td>
+            <td>${pln(priceN)}</td><td>${pln(net)}</td><td>${pln(vat)}</td><td>${pln(bru)}</td>
+          </tr></tbody>
+        </table>
+        <div class="mg" style="margin-top:12px">
+          <div class="m"><div class="l">Razem netto</div><div class="n">${pln(net)}</div></div>
+          <div class="m ok"><div class="l">Razem brutto</div><div class="n">${pln(bru)}</div></div>
+        </div>
+      </div>`;
+  }
+
+  $('results').innerHTML = resHTML;
+  $('results').className = 'res on';
+  $('results').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function rysujWizualizacje(tDl, tSzer, segX, segY, offsetPct, fuga, pDl, restMode=false, restOffsets=null, podzX=0) {
+  const padTop = 36, padBottom = 46, padLeft = 56, padRight = 24;
+  const maxPx = 540;
+  const scale = Math.min(maxPx / tDl, (maxPx*0.6) / tSzer);
+  const tW = tDl * scale;
+  const tH = tSzer * scale;
+
+  const modulXcm = pDl + fuga;
+  const offsetPx = (offsetPct/100) * modulXcm * scale;
+
+  let rects = '';
+  let colorToggle = 0;
+  const uniqueDocinkiX = new Map();
+  const uniqueDocinkiY = new Map();
+
+  for (let rowIdx = 0; rowIdx < segY.length; rowIdx++) {
+    const sy = segY[rowIdx];
+    const y = sy.pos * scale;
+    const h = sy.w * scale;
+    const isOddRow = offsetPct > 0 && (rowIdx % 2 === 1);
+    const shift = isOddRow ? offsetPx : 0;
+
+    const renderList = [];
+    for (const sx of segX) {
+      renderList.push({ x: sx.pos*scale - shift, w: sx.w*scale, cutX: sx.cut, realW: sx.w });
+    }
+    if (isOddRow) {
+      const last = segX[segX.length-1];
+      renderList.push({ x: (last.pos+last.w)*scale - shift, w: modulXcm*scale, cutX: true, realW: modulXcm });
+    }
+
+    for (const item of renderList) {
+      let xx = item.x, ww = item.w;
+      let clipL=0, clipR=0;
+      if (xx < 0) { clipL = -xx; xx = 0; ww -= clipL; }
+      if (xx + ww > tW) { clipR = (xx+ww)-tW; ww -= clipR; }
+      if (ww <= 0.5) continue;
+
+      // Płytka jest "docinkiem" jeśli ucięta w X LUB w Y (wiersz)
+      const isCut = item.cutX || sy.cut || clipL > 0.5 || clipR > 0.5;
+      const fill = isCut ? 'rgba(192,57,43,0.22)' : (colorToggle % 2 === 0 ? 'rgba(26,95,165,0.16)' : 'rgba(26,95,165,0.26)');
+      const stroke = isCut ? '#a32d2d' : '#1a5fa8';
+
+      rects += `<rect x="${padLeft+xx}" y="${padTop+y}" width="${ww}" height="${h}" fill="${fill}" stroke="${stroke}" stroke-width="0.7"/>`;
+      colorToggle++;
+
+      if (item.cutX && !isOddRow) {
+        const key = R2(item.realW);
+        if (!uniqueDocinkiX.has(key)) uniqueDocinkiX.set(key, {x: padLeft+xx+ww/2});
+      }
+    }
+
+    if (sy.cut) {
+      const key = R2(sy.w);
+      if (!uniqueDocinkiY.has(key)) uniqueDocinkiY.set(key, {y: padTop+y+h/2});
+    }
+  }
+
+  const svgW = padLeft + tW + padRight;
+  const svgH = padTop + tH + padBottom;
+
+  let labelsX = '';
+  uniqueDocinkiX.forEach((info, val) => {
+    labelsX += `
+      <line x1="${info.x}" y1="${padTop-8}" x2="${info.x}" y2="${padTop-2}" stroke="#a32d2d" stroke-width="1"/>
+      <text x="${info.x}" y="${padTop-13}" text-anchor="middle" font-size="11" font-weight="600" fill="#a32d2d">${val} cm</text>`;
+  });
+
+  let labelsY = '';
+  uniqueDocinkiY.forEach((info, val) => {
+    labelsY += `<text x="${padLeft-10}" y="${info.y}" text-anchor="end" dominant-baseline="central" font-size="11" font-weight="600" fill="#a32d2d">${val} cm</text>`;
+  });
+
+  const dimY = padTop + tH + 16;
+  const tarasLabelX = `
+    <line x1="${padLeft}" y1="${dimY}" x2="${padLeft+tW}" y2="${dimY}" stroke="var(--text2)" stroke-width="0.8"/>
+    <text x="${padLeft+tW/2}" y="${dimY+16}" text-anchor="middle" font-size="11" fill="var(--text2)">${tDl} cm</text>`;
+  const tarasLabelY = `<text x="16" y="${padTop+tH/2}" text-anchor="middle" font-size="11" fill="var(--text2)" transform="rotate(-90, 16, ${padTop+tH/2})">${tSzer} cm</text>`;
+
+  return `<svg width="${Math.min(svgW,560)}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}" role="img">
+    <title>Wizualizacja układu płytek</title>
+    <desc>Podgląd rozmieszczenia płytek z wymiarami docinków na krawędziach</desc>
+    <rect x="${padLeft}" y="${padTop}" width="${tW}" height="${tH}" fill="none" stroke="var(--text)" stroke-width="2"/>
+    ${rects}
+    ${labelsX}
+    ${labelsY}
+    ${tarasLabelX}
+    ${tarasLabelY}
+  </svg>`;
+}
+
+function drukuj() {
+  if (!$('results').classList.contains('on')) {
+    alert('Najpierw oblicz zamówienie.');
+    return;
+  }
+  try {
+    window.print();
+  } catch(e) {
+    console.error('Błąd drukowania:', e);
+  }
+}
+
+// ── ZAPISZ / WCZYTAJ KONFIGURACJĘ ───────────────────────
+function zbierzKonfiguracje() {
+  const cfg = { _typ: 'kalkulator-plytek-v1', pola: {} };
+  const pola = ['p-dl','p-szer','p-fuga','offset','zapas','op-szt','c-m2','c-szt','c-vat'];
+  pola.forEach(id => {
+    const el = $(id);
+    if (el) cfg.pola[id] = el.value;
+  });
+
+  cfg.trybTaras = document.querySelector('input[name=trybTaras]:checked').value;
+  cfg.orient    = document.querySelector('input[name=orient]:checked').value;
+  cfg.ciecieX   = document.querySelector('input[name=ciecieX]:checked').value;
+  cfg.ciecieY   = document.querySelector('input[name=ciecieY]:checked').value;
+
+  cfg.tarasy = [...document.querySelectorAll('.taras-block')].map(b => ({
+    dl: b.querySelector('.t-dl').value,
+    szer: b.querySelector('.t-szer').value,
+  }));
+
+  return cfg;
+}
+
+function zapiszKonfiguracje() {
+  const cfg = zbierzKonfiguracje();
+  const blob = new Blob([JSON.stringify(cfg, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dt = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
+  a.href = url;
+  a.download = `plytki_konfiguracja_${dt}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function wczytajKonfiguracje(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const cfg = JSON.parse(e.target.result);
+      if (cfg._typ !== 'kalkulator-plytek-v1') {
+        alert('Ten plik nie jest konfiguracją kalkulatora płytek.');
+        return;
+      }
+      Object.entries(cfg.pola || {}).forEach(([id, val]) => {
+        const el = $(id);
+        if (el) el.value = val;
+      });
+
+      if (cfg.trybTaras) {
+        const radio = document.querySelector(`input[name=trybTaras][value="${cfg.trybTaras}"]`);
+        if (radio) radio.checked = true;
+      }
+      if (cfg.orient) {
+        const radio = document.querySelector(`input[name=orient][value="${cfg.orient}"]`);
+        if (radio) radio.checked = true;
+      }
+      if (cfg.ciecieX) {
+        const radio = document.querySelector(`input[name=ciecieX][value="${cfg.ciecieX}"]`);
+        if (radio) radio.checked = true;
+      }
+      if (cfg.ciecieY) {
+        const radio = document.querySelector(`input[name=ciecieY][value="${cfg.ciecieY}"]`);
+        if (radio) radio.checked = true;
+      }
+
+      $('tarasy-container').innerHTML = '';
+      tarasCount = 0;
+      (cfg.tarasy || []).forEach(t => addTaras(t.dl, t.szer));
+
+      toggleTrybTaras();
+
+      alert('Konfiguracja wczytana. Kliknij "Oblicz" aby zobaczyć wyniki.');
+    } catch (err) {
+      alert('Błąd wczytywania pliku: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// Inicjalizacja
+addTaras(500, 300);
+</script>
+</body>
+</html>
