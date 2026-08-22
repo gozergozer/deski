@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kalkulator płytek tarasowych</title>
+<title>Kalkulator płytek tarasowych v2</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -567,9 +567,17 @@ function rysujWizualizacje(tDl, tSzer, segX, segY, offsetPct, fuga, pDl, restMod
       rects += `<rect x="${padLeft+xx}" y="${padTop+y}" width="${ww}" height="${h}" fill="${fill}" stroke="${stroke}" stroke-width="0.7"/>`;
       colorToggle++;
 
-      if (sx.cut && rowIdx <= 1) {
+      if (sx.cut) {
         const key = R2(sx.w);
         if (!uniqueDocinkiX.has(key)) uniqueDocinkiX.set(key, {x: padLeft+xx+ww/2});
+      }
+    }
+
+    // W trybie reszty: pokaż offset po lewej stronie każdego rzędu
+    if (restMode && restOffsets) {
+      const off = restOffsets[rowIdx] || 0;
+      if (off > 0.01) {
+        rects += `<text x="${padLeft-4}" y="${padTop+y+h/2}" text-anchor="end" dominant-baseline="central" font-size="9" fill="#a32d2d">${R2(off)}</text>`;
       }
     }
 
