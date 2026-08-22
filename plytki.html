@@ -2,8 +2,9 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kalkulator płytek tarasowych v2</title>
+<title>Kalkulator płytek tarasowych v3</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -142,37 +143,11 @@ tr.sum td{background:var(--bg2);font-weight:600}
 
   <div class="card">
     <p class="ct">Układ płytek</p>
-    <div class="radio-group" style="margin-bottom:14px">
+    <div class="radio-group">
       <label class="radio-opt"><input type="radio" name="orient" value="dl" checked> Płytka pozioma (długość wzdłuż tarasu)</label>
       <label class="radio-opt"><input type="radio" name="orient" value="szer"> Płytka pionowa (obrót 90°)</label>
     </div>
-    <div class="f" style="max-width:300px;margin-bottom:14px">
-      <label>Przesunięcie rzędów (układ cegiełka)</label>
-      <select id="offset" onchange="toggleMinResztka()">
-        <option value="0">Brak — układ równoległy</option>
-        <option value="50">1/2 (cegiełka klasyczna)</option>
-        <option value="33.33">1/3</option>
-        <option value="25">1/4</option>
-        <option value="rest">Resztka przechodzi do kolejnego rzędu</option>
-      </select>
-    </div>
-    <div class="f" id="min-resztka-field" style="max-width:300px;display:none;margin-top:10px">
-      <label>Minimalna długość resztki do ułożenia [cm]</label>
-      <input type="number" id="min-resztka" value="20" step="1" min="0">
-    </div>
-    <hr class="sep">
-    <p style="font-size:12px;color:var(--text2);margin-bottom:10px"><strong>Cięcie wzdłuż długości tarasu</strong></p>
-    <div class="radio-group" style="margin-bottom:14px">
-      <label class="radio-opt"><input type="radio" name="ciecieX" value="start" checked> Pełna płytka od lewej, docinek z prawej</label>
-      <label class="radio-opt"><input type="radio" name="ciecieX" value="end"> Docinek z lewej, pełna płytka z prawej</label>
-      <label class="radio-opt"><input type="radio" name="ciecieX" value="both"> Symetrycznie — docinek po obu stronach</label>
-    </div>
-    <p style="font-size:12px;color:var(--text2);margin-bottom:10px"><strong>Cięcie wzdłuż szerokości tarasu</strong></p>
-    <div class="radio-group">
-      <label class="radio-opt"><input type="radio" name="ciecieY" value="start" checked> Pełna płytka od góry, docinek z dołu</label>
-      <label class="radio-opt"><input type="radio" name="ciecieY" value="end"> Docinek z góry, pełna płytka z dołu</label>
-      <label class="radio-opt"><input type="radio" name="ciecieY" value="both"> Symetrycznie — docinek po obu stronach</label>
-    </div>
+    <p style="font-size:12px;color:var(--text2);margin-top:10px">Cięcia i przesunięcie ustawiasz osobno dla każdego tarasu.</p>
   </div>
 
   <div class="card">
@@ -218,7 +193,7 @@ const pln = v => v.toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFracti
 
 let tarasCount = 0;
 
-function addTaras(dl=500, szer=300) {
+function addTaras(dl=500, szer=300, cfg={}) {
   tarasCount++;
   const id = tarasCount;
   const div = document.createElement('div');
@@ -229,10 +204,45 @@ function addTaras(dl=500, szer=300) {
       <span>Taras ${id}</span>
       <button class="delbtn" onclick="this.closest('.taras-block').remove()" aria-label="Usuń taras"><i class="ti ti-x" aria-hidden="true"></i></button>
     </div>
-    <div class="g2">
+    <div class="g2" style="margin-bottom:10px">
       <div class="f"><label>Długość [cm]</label><input type="number" class="t-dl" value="${dl}" step="1" min="10"></div>
       <div class="f"><label>Szerokość [cm]</label><input type="number" class="t-szer" value="${szer}" step="1" min="10"></div>
-    </div>`;
+    </div>
+    <details style="font-size:12px;color:var(--text2);cursor:pointer">
+      <summary style="margin-bottom:8px;font-weight:500">Układ płytek dla tego tarasu</summary>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
+        <div class="f">
+          <label>Cięcie wzdłuż długości</label>
+          <select class="t-ciecieX">
+            <option value="start" ${cfg.ciecieX==='start'||!cfg.ciecieX?'selected':''}>Pełna od lewej, docinek z prawej</option>
+            <option value="end"   ${cfg.ciecieX==='end'?'selected':''}>Docinek z lewej, pełna z prawej</option>
+            <option value="both"  ${cfg.ciecieX==='both'?'selected':''}>Symetrycznie</option>
+          </select>
+        </div>
+        <div class="f">
+          <label>Cięcie wzdłuż szerokości</label>
+          <select class="t-ciecieY">
+            <option value="start" ${cfg.ciecieY==='start'||!cfg.ciecieY?'selected':''}>Pełna od góry, docinek z dołu</option>
+            <option value="end"   ${cfg.ciecieY==='end'?'selected':''}>Docinek z góry, pełna z dołu</option>
+            <option value="both"  ${cfg.ciecieY==='both'?'selected':''}>Symetrycznie</option>
+          </select>
+        </div>
+        <div class="f">
+          <label>Przesunięcie rzędów</label>
+          <select class="t-offset" onchange="this.closest('.taras-block').querySelector('.t-min-resztka-wrap').style.display=this.value==='rest'?'block':'none'">
+            <option value="0"    ${!cfg.offset||cfg.offset==='0'?'selected':''}>Brak</option>
+            <option value="50"   ${cfg.offset==='50'?'selected':''}>1/2 cegiełka</option>
+            <option value="33.33"${cfg.offset==='33.33'?'selected':''}>1/3</option>
+            <option value="25"   ${cfg.offset==='25'?'selected':''}>1/4</option>
+            <option value="rest" ${cfg.offset==='rest'?'selected':''}>Resztka do kolejnego rzędu</option>
+          </select>
+        </div>
+        <div class="f t-min-resztka-wrap" style="display:${cfg.offset==='rest'?'block':'none'}">
+          <label>Min. długość resztki [cm]</label>
+          <input type="number" class="t-min-resztka" value="${cfg.minResztka||20}" step="1" min="0">
+        </div>
+      </div>
+    </details>`;
   $('tarasy-container').appendChild(div);
 }
 
@@ -352,12 +362,30 @@ function liczTaras(tDl, tSzer, pDl, pSzer, fuga, offsetPct, ciecieX, ciecieY, re
     nXEff = maxCols;
   }
 
-  const totalPlytek = nXEff * nY;
   const tarasM2 = R3(tDl * tSzer / 10000);
   const plytkaM2 = R3(pDl * pSzer / 10000);
-  const bruttoM2 = R3(totalPlytek * plytkaM2);
-  const odpadM2  = R3(bruttoM2 - tarasM2);
-  const odpadPct = R2(odpadM2 / bruttoM2 * 100);
+
+  let totalPlytek, bruttoM2, odpadM2, odpadPct;
+
+  if (restMode) {
+    // W trybie reszty: licz tylko NOWE płytki (resztki to części już kupionych)
+    const offsets = obliczOffsetyReszta(tDl, podzX, nY, minResztka);
+    let noweRazem = 0;
+    offsets.forEach(off => {
+      const segs = liczSegmentyReszta(tDl, podzX, off, minResztka);
+      noweRazem += segs.filter(s => !s.isRest).length;
+    });
+    totalPlytek = noweRazem;
+    bruttoM2 = R3(totalPlytek * plytkaM2);
+    // Rzeczywisty odpad = brutto - taras (może być ujemny gdy resztki pokrywają taras)
+    odpadM2 = R3(bruttoM2 - tarasM2);
+    odpadPct = bruttoM2 > 0 ? R2(Math.max(0, odpadM2) / bruttoM2 * 100) : 0;
+  } else {
+    totalPlytek = nXEff * nY;
+    bruttoM2 = R3(totalPlytek * plytkaM2);
+    odpadM2  = R3(bruttoM2 - tarasM2);
+    odpadPct = R2(odpadM2 / bruttoM2 * 100);
+  }
 
   // Unikalne wymiary docinków (do informacji)
   const docinkiX = [...new Set(segX.filter(s=>s.cut).map(s=>R2(s.w)))];
@@ -372,32 +400,27 @@ function liczTaras(tDl, tSzer, pDl, pSzer, fuga, offsetPct, ciecieX, ciecieY, re
   };
 }
 
-function toggleMinResztka() {
-  const isRest = document.getElementById('offset').value === 'rest';
-  document.getElementById('min-resztka-field').style.display = isRest ? 'block' : 'none';
-}
-
 function calculate() {
   const pDlRaw   = num('p-dl')   || 60;
   const pSzerRaw = num('p-szer') || 60;
   const fuga     = num('p-fuga') || 0;
   const zapasInp = $('zapas').value;
   const zapas    = zapasInp === '' ? 10 : (parseFloat(zapasInp) || 0);
-  const offsetPct = parseFloat($('offset').value) || 0;
+  // offsetPct jest teraz lokalny dla każdego tarasu (t.offset)
   const orient   = document.querySelector('input[name=orient]:checked').value;
-  const ciecieX  = document.querySelector('input[name=ciecieX]:checked').value;
-  const ciecieY  = document.querySelector('input[name=ciecieY]:checked').value;
-  const offsetVal = $('offset').value;
-  const minResztka = parseFloat($('min-resztka').value) || 20;
   const opSzt    = parseInt($('op-szt').value) || 0;
 
   let pDl = pDlRaw, pSzer = pSzerRaw;
   if (orient === 'szer') { pDl = pSzerRaw; pSzer = pDlRaw; }
 
   const tarasy = [...document.querySelectorAll('.taras-block')].map(b => ({
-    id: b.dataset.tarasId,
-    dl: parseFloat(b.querySelector('.t-dl').value) || 0,
-    szer: parseFloat(b.querySelector('.t-szer').value) || 0,
+    id:         b.dataset.tarasId,
+    dl:         parseFloat(b.querySelector('.t-dl').value) || 0,
+    szer:       parseFloat(b.querySelector('.t-szer').value) || 0,
+    ciecieX:    b.querySelector('.t-ciecieX')    ? b.querySelector('.t-ciecieX').value    : 'start',
+    ciecieY:    b.querySelector('.t-ciecieY')    ? b.querySelector('.t-ciecieY').value    : 'start',
+    offset:     b.querySelector('.t-offset')     ? b.querySelector('.t-offset').value     : '0',
+    minResztka: b.querySelector('.t-min-resztka')? parseFloat(b.querySelector('.t-min-resztka').value)||20 : 20,
   })).filter(t => t.dl>0 && t.szer>0);
 
   if (!tarasy.length) { alert('Dodaj co najmniej jeden taras.'); return; }
@@ -410,15 +433,15 @@ function calculate() {
       <table>
         <tr><td>Płytka</td><td>${pDl} × ${pSzer} cm, fuga ${fuga} cm</td></tr>
         <tr><td>Orientacja</td><td>${orient==='dl'?'pozioma':'pionowa (obrót 90°)'}</td></tr>
-        <tr><td>Przesunięcie rzędów</td><td>${offsetPct>0?offsetPct+'%':'brak (układ równoległy)'}</td></tr>
-        <tr><td>Cięcie wzdłuż długości</td><td>${ciecieLabel(ciecieX)}</td></tr>
-        <tr><td>Cięcie wzdłuż szerokości</td><td>${ciecieLabel(ciecieY)}</td></tr>
+        <tr><td>Układ</td><td>Ustawiony osobno dla każdego tarasu</td></tr>
         <tr><td>Zapas</td><td>${zapas}%</td></tr>
       </table>
     </div>`;
 
   tarasy.forEach((t, idx) => {
-    const w = liczTaras(t.dl, t.szer, pDl, pSzer, fuga, offsetPct, ciecieX, ciecieY, offsetVal === 'rest', minResztka);
+    const tOffsetPct = parseFloat(t.offset) || 0;
+    const tRestMode  = t.offset === 'rest';
+    const w = liczTaras(t.dl, t.szer, pDl, pSzer, fuga, tOffsetPct, t.ciecieX, t.ciecieY, tRestMode, t.minResztka);
     sumaPlytek += w.totalPlytek;
     sumaTarasM2 = R3(sumaTarasM2 + w.tarasM2);
     sumaBruttoM2 = R3(sumaBruttoM2 + w.bruttoM2);
@@ -431,7 +454,7 @@ function calculate() {
       ? `<div class="banner" style="display:block;background:var(--info-bg);color:var(--info-t)"><i class="ti ti-ruler-2" aria-hidden="true"></i> Wymiary płytek do przycięcia — ${docinekParts.join(' &nbsp;|&nbsp; ')}</div>`
       : `<div class="banner" style="display:block;background:var(--ok-bg);color:var(--ok-t)"><i class="ti ti-check" aria-hidden="true"></i> Płytki mieszczą się idealnie — brak docinków.</div>`;
 
-    const vizSvg = rysujWizualizacje(t.dl, t.szer, w.segX, w.segY, offsetPct, fuga, pDl, w.restMode, w.restOffsets, w.podzX, w.minResztka);
+    const vizSvg = rysujWizualizacje(t.dl, t.szer, w.segX, w.segY, tOffsetPct, fuga, pDl, w.restMode, w.restOffsets, w.podzX, w.minResztka);
 
     const warnHTML = w.odpadPct > 20
       ? `<div class="banner warn on"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Odpad ${w.odpadPct}% jest wysoki — rozważ inny wymiar płytki lub orientację.</div>`
@@ -516,6 +539,7 @@ function calculate() {
 }
 
 function rysujWizualizacje(tDl, tSzer, segX, segY, offsetPct, fuga, pDl, restMode=false, restOffsets=null, podzX=0, minResztka=20) {
+  console.log('rysujViz:', {tDl, restMode, podzX, restOffsets: restOffsets ? restOffsets.slice(0,5) : null});
   const padTop = 36, padBottom = 46, padLeft = 56, padRight = 24;
   const maxPx = 540;
   const scale = Math.min(maxPx / tDl, (maxPx*0.6) / tSzer);
@@ -643,12 +667,15 @@ function zbierzKonfiguracje() {
 
   cfg.trybTaras = document.querySelector('input[name=trybTaras]:checked').value;
   cfg.orient    = document.querySelector('input[name=orient]:checked').value;
-  cfg.ciecieX   = document.querySelector('input[name=ciecieX]:checked').value;
-  cfg.ciecieY   = document.querySelector('input[name=ciecieY]:checked').value;
+
 
   cfg.tarasy = [...document.querySelectorAll('.taras-block')].map(b => ({
-    dl: b.querySelector('.t-dl').value,
-    szer: b.querySelector('.t-szer').value,
+    dl:         b.querySelector('.t-dl').value,
+    szer:       b.querySelector('.t-szer').value,
+    ciecieX:    b.querySelector('.t-ciecieX').value,
+    ciecieY:    b.querySelector('.t-ciecieY').value,
+    offset:     b.querySelector('.t-offset').value,
+    minResztka: b.querySelector('.t-min-resztka').value,
   }));
 
   return cfg;
@@ -692,18 +719,12 @@ function wczytajKonfiguracje(event) {
         const radio = document.querySelector(`input[name=orient][value="${cfg.orient}"]`);
         if (radio) radio.checked = true;
       }
-      if (cfg.ciecieX) {
-        const radio = document.querySelector(`input[name=ciecieX][value="${cfg.ciecieX}"]`);
-        if (radio) radio.checked = true;
-      }
-      if (cfg.ciecieY) {
-        const radio = document.querySelector(`input[name=ciecieY][value="${cfg.ciecieY}"]`);
-        if (radio) radio.checked = true;
-      }
-
       $('tarasy-container').innerHTML = '';
       tarasCount = 0;
-      (cfg.tarasy || []).forEach(t => addTaras(t.dl, t.szer));
+      (cfg.tarasy || []).forEach(t => addTaras(t.dl, t.szer, {
+        ciecieX: t.ciecieX, ciecieY: t.ciecieY,
+        offset: t.offset, minResztka: t.minResztka
+      }));
 
       toggleTrybTaras();
 
